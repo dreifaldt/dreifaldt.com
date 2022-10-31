@@ -1,14 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-type Data = {
-  name: string
-}
-
-export const getTimeSlots = async (
-  req: NextApiRequest,
-  res: NextApiResponse<Data>
-) => {
+export const getTimeSlots = async () => {
   const response = await fetch(
     `${process.env.API_HOST}/public/timeslots?bookingType=MIDWIFE`
   )
