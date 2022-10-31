@@ -10,13 +10,20 @@ export const getTimeSlots = async (
   res: NextApiResponse<Data>
 ) => {
   const response = await fetch('https://test.ester.care/ping')
+  console.log({ response })
   const data = await response.json()
-  return new Response(data, {
-    status: 200,
-    headers: {
-      'Cache-Control': 'max-age=0, s-maxage=3600, stale-while-revalidate'
+  console.log({ data })
+  return new Response(
+    JSON.stringify({
+      data: data
+    }),
+    {
+      status: 200,
+      headers: {
+        'Cache-Control': 'max-age=0, s-maxage=3600, stale-while-revalidate'
+      }
     }
-  })
+  )
 }
 
 export default getTimeSlots
