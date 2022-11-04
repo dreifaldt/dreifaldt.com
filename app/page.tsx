@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 import styled from 'styled-components'
 
 interface Todo {
@@ -24,24 +24,32 @@ const Home = () => {
     <div>
       <h1>Todo List</h1>
       <Grid>
-        <input value={title} onInput={(e) => setTitle(e.target.value)} />
-        <input
-          value={description}
-          onInput={(e) => setDescription(e.target.value)}
-        />
+        <span>
+          <input
+            value={title}
+            onInput={(e: ChangeEvent<HTMLInputElement>) =>
+              setTitle(e.target.value)
+            }
+          />
+          <input
+            value={description}
+            onInput={(e: ChangeEvent<HTMLInputElement>) =>
+              setDescription(e.target.value)
+            }
+          />
+          <Button onClick={() => addTodo({ title, description })}>
+            <strong>SAVE</strong>
+          </Button>
+        </span>
+        <span>
+          {todos.map((todo, index) => (
+            <div key={index}>
+              <strong>{todo.title}</strong>
+              <p>{todo.description}</p>
+            </div>
+          ))}
+        </span>
       </Grid>
-      <Button onClick={() => addTodo({ title, description })}>
-        <strong>SAVE</strong>
-      </Button>
-
-      <div>
-        {todos.map((todo, index) => (
-          <div key={index}>
-            <strong>{todo.title}</strong>
-            <p>{todo.description}</p>
-          </div>
-        ))}
-      </div>
     </div>
   )
 }
