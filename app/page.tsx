@@ -11,7 +11,7 @@ interface Todo {
 const Home = () => {
   const [todos, setTodos] = useState<Todo[]>([])
   const [title, setTitle] = useState<string>('')
-  const [description, setDescription] = useState<''>('')
+  const [description, setDescription] = useState<string>('')
 
   const addTodo = ({ title, description }: Todo) => {
     const newTodos = [...todos, { title, description }]
@@ -27,14 +27,14 @@ const Home = () => {
         <span>
           <input
             value={title}
-            onInput={(e: ChangeEvent<HTMLInputElement>) =>
-              setTitle(e.target.value)
+            onInput={({ target }: ChangeEvent<HTMLInputElement>) =>
+              setTitle(target.value)
             }
           />
           <input
             value={description}
-            onInput={(e: ChangeEvent<HTMLInputElement>) =>
-              setDescription(e.target.value)
+            onInput={({ target }: ChangeEvent<HTMLInputElement>) =>
+              setDescription(target.value)
             }
           />
           <Button onClick={() => addTodo({ title, description })}>
