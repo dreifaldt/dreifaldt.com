@@ -23,12 +23,16 @@ const Home = () => {
   return (
     <div>
       <h1>Todo List</h1>
-      <input value={title} onInput={(e) => setTitle(e.target.value)} />
-      <input
-        value={description}
-        onInput={(e) => setDescription(e.target.value)}
-      />
-      <Button onClick={() => addTodo({ title, description })} />
+      <Grid>
+        <input value={title} onInput={(e) => setTitle(e.target.value)} />
+        <input
+          value={description}
+          onInput={(e) => setDescription(e.target.value)}
+        />
+      </Grid>
+      <Button onClick={() => addTodo({ title, description })}>
+        <strong>SAVE</strong>
+      </Button>
 
       <div>
         {todos.map((todo, index) => (
@@ -43,6 +47,13 @@ const Home = () => {
 }
 
 export default Home
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  column-gap: 24px;
+  margin-bottom: 24px;
+`
 
 const Button = styled.button`
   display: inline-block;
