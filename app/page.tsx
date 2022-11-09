@@ -1,56 +1,15 @@
 'use client'
 
-import { ChangeEvent, useState } from 'react'
-import styled from 'styled-components'
-
-interface Todo {
-  title: string
-  description: string
-}
+import styled, { keyframes } from 'styled-components'
 
 const Home = () => {
-  const [todos, setTodos] = useState<Todo[]>([])
-  const [title, setTitle] = useState<string>('')
-  const [description, setDescription] = useState<string>('')
-
-  const addTodo = ({ title, description }: Todo) => {
-    const newTodos = [...todos, { title, description }]
-    setTodos(newTodos)
-    setTitle('')
-    setDescription('')
-  }
-
   return (
-    <div>
-      <h1>Todo List</h1>
-      <Grid>
-        <span>
-          <input
-            value={title}
-            onInput={({ target }: ChangeEvent<HTMLInputElement>) =>
-              setTitle(target.value)
-            }
-          />
-          <input
-            value={description}
-            onInput={({ target }: ChangeEvent<HTMLInputElement>) =>
-              setDescription(target.value)
-            }
-          />
-          <Button onClick={() => addTodo({ title, description })}>
-            <strong>SAVE</strong>
-          </Button>
-        </span>
-        <span>
-          {todos.map((todo, index) => (
-            <div key={index}>
-              <strong>{todo.title}</strong>
-              <p>{todo.description}</p>
-            </div>
-          ))}
-        </span>
-      </Grid>
-    </div>
+    <Grid>
+      <Span>
+        <h1>DREIFALDT CONSULTING</h1>
+      </Span>
+      <Span></Span>
+    </Grid>
   )
 }
 
@@ -58,19 +17,43 @@ export default Home
 
 const Grid = styled.div`
   display: grid;
+
+  height: 100vh;
+  align-items: center;
   grid-template-columns: repeat(2, 1fr);
   column-gap: 24px;
-  margin-bottom: 24px;
+  background-color: black;
 `
+const Span = styled.span`
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  h1 {
+    color: white;
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: solid 3px black;
+    margin: 0;
 
-const Button = styled.button`
-  display: inline-block;
-  flex: 1;
-  border: none;
-  background-color: teal;
-  color: white;
-  height: 30px;
-  width: 50px;
-  border-radius: 2px;
-  cursor: pointer;
+    animation: type 2s steps(26) 1s forwards, blink 0.5s steps(1) infinite;
+  }
+
+  @keyframes type {
+    to {
+      width: 26ch;
+    }
+  }
+
+  @keyframes blink {
+    from {
+      border-color: transparent;
+    }
+    50% {
+      border-color: white;
+    }
+    to {
+      border-color: transparent;
+    }
+  }
 `
