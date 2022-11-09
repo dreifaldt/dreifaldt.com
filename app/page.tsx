@@ -1,15 +1,22 @@
 'use client'
 
-import styled, { keyframes } from 'styled-components'
+import { Suspense } from 'react'
+import styled from 'styled-components'
+import { Canvas } from '../components/Canvas'
+import Loading from './loading'
 
 const Home = () => {
   return (
-    <Grid>
-      <Span>
-        <h1>DREIFALDT CONSULTING</h1>
-      </Span>
-      <Span></Span>
-    </Grid>
+    <>
+      <Grid>
+        <Suspense fallback={<Loading />}>
+          <Span>
+            <h1>DREIFALDT CONSULTING</h1>
+          </Span>
+        </Suspense>
+        <Canvas />
+      </Grid>
+    </>
   )
 }
 
@@ -17,12 +24,12 @@ export default Home
 
 const Grid = styled.div`
   display: grid;
-
+  grid-auto-flow: column;
+  grid-auto-rows: '1fr';
   height: 100vh;
   align-items: center;
   grid-template-columns: repeat(2, 1fr);
   column-gap: 24px;
-  background-color: black;
 `
 const Span = styled.span`
   text-align: center;
@@ -34,7 +41,8 @@ const Span = styled.span`
     overflow: hidden;
     white-space: nowrap;
     border-right: solid 3px black;
-    margin: 0;
+    z-index: 2;
+    margin-top: 152px;
 
     animation: type 2s steps(26) 1s forwards, blink 0.5s steps(1) infinite;
   }
