@@ -2,25 +2,19 @@
 
 import { Suspense } from 'react'
 import styled from 'styled-components'
-import { Canvas } from '../components/Canvas'
 import Loading from './loading'
 
-const Home = () => {
+export default function () {
   return (
-    <>
-      <Grid>
-        <Suspense fallback={<Loading />}>
-          <Span>
-            <h1>DREIFALDT CONSULTING</h1>
-          </Span>
-        </Suspense>
-        <Canvas />
-      </Grid>
-    </>
+    <Grid>
+      <Suspense fallback={<Loading />}>
+        <Span>
+          <h1>DREIFALDT CONSULTING</h1>
+        </Span>
+      </Suspense>
+    </Grid>
   )
 }
-
-export default Home
 
 const Grid = styled.div`
   display: grid;
@@ -35,6 +29,7 @@ const Span = styled.span`
   text-align: center;
   display: flex;
   justify-content: center;
+
   h1 {
     color: white;
     width: 0;
