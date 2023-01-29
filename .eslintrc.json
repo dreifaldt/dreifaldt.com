@@ -10,10 +10,18 @@
   ],
   "plugins": ["prettier", "react", "react-hooks", "@typescript-eslint", "import"],
   "rules": {
+    "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
     "import/no-unresolved": "error",
     "import/no-useless-path-segments": "error",
+    "import/extensions": ["warn", "never"],
+    "no-use-before-define": [
+      "error",
+      {
+        "functions": true,
+        "variables": false
+      }
+    ],
     "import/no-named-as-default": "error",
-    "import/no-unused-modules": "error",
     "no-throw-literal": "error",
     "import/no-cycle": [
       "error",

@@ -4,7 +4,7 @@ import { Suspense } from 'react'
 import styled from 'styled-components'
 import Loading from './loading'
 
-export default function () {
+export default function Home() {
   return (
     <Grid>
       <Suspense fallback={<Loading />}>
