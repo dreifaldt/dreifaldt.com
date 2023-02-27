@@ -5,5 +5,5 @@ import { breakpoints } from './breakpoints'
 export const theme = {
   colors,
   spacing,
-  breakpoints
+  breakpoints,
 }
