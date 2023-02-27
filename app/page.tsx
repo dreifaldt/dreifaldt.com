@@ -16,8 +16,7 @@ export default function Home() {
         <div>
           Information regarding previous endevours can be found on my LinkedIn.
           <br />
-          Interested in working with me?
-          <Link href="mailto:erik@dreifaldt.com">Let me know by email</Link>.<br />
+          Interested in working with me? <Link href="mailto:erik@dreifaldt.com">Let me know by email</Link>.<br />
           Have a great day,
           <br />— Erik
         </div>
