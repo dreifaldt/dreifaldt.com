@@ -14,11 +14,20 @@ export default function Home() {
           <h1>&lt; DREIFALDT &gt;</h1>
         </Span>
         <div>
-          Information regarding previous endevours can be found on my LinkedIn.
+          Information regarding previous endevours can be found on my{' '}
+          <Link href="https://www.linkedin.com/in/erik-dreifaldt-293a0795/">
+            <div className="blue-underline">LinkedIn</div>
+          </Link>
+          .
           <br />
-          Interested in working with me? <Link href="mailto:erik@dreifaldt.com">Let me know by email</Link>.<br />
+          Interested in working with me?{' '}
+          <Link href="mailto:erik@dreifaldt.com">
+            <div className="orange-underline">Let me know by email</div>
+          </Link>
+          .<br />
           Have a great day,
-          <br />— Erik
+          <br />
+          <div className="grey">— Erik</div>
         </div>
       </Suspense>
     </Grid>
@@ -39,6 +48,8 @@ const Grid = styled.div`
   flex-direction: column;
 
   div {
+    line-height: 32px;
+    display: inline;
     color: ${theme.colors.white};
     font-size: 24px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
