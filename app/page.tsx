@@ -20,11 +20,13 @@ export default function Home() {
           </Link>
           .
           <br />
+          <br />
           Interested in working with me?{' '}
           <Link href="mailto:erik@dreifaldt.com">
             <div className="orange-underline">Let me know by email</div>
           </Link>
           .<br />
+          <br />
           Have a great day,
           <br />
           <div className="grey">— Erik</div>
@@ -46,6 +48,7 @@ const Grid = styled.div`
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  padding: 24px;
 
   div {
     line-height: 32px;
@@ -81,7 +84,7 @@ const Span = styled.span`
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
       'Helvetica Neue', sans-serif;
     color: ${theme.colors.white};
-    font-size: 60px;
+    font-size: 50px;
 
     @media (min-width: ${theme.breakpoints.small}px) {
       font-size: 90px;
