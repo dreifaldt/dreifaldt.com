@@ -84,14 +84,14 @@ const Span = styled.span`
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
       'Helvetica Neue', sans-serif;
     color: ${theme.colors.white};
-    font-size: 50px;
+    font-size: 38px;
 
     @media (min-width: ${theme.breakpoints.small}px) {
-      font-size: 90px;
+      font-size: 86px;
     }
 
     @media (min-width: ${theme.breakpoints.large}px) {
-      font-size: 140px;
+      font-size: 110px;
     }
 
     :hover {
