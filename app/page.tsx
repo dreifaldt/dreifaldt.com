@@ -37,14 +37,10 @@ export default function Home() {
 }
 
 const Grid = styled.div`
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
   background-color: ${theme.colors.black};
   display: flex;
   flex: 1;
+  height: 100vh;
   align-items: center;
   justify-content: center;
   flex-direction: column;
@@ -52,7 +48,7 @@ const Grid = styled.div`
 
   div {
     line-height: 32px;
-    display: inline;
+    display: inline-block;
     color: ${theme.colors.white};
     font-size: 24px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
@@ -70,6 +66,7 @@ const Grid = styled.div`
 
     .grey {
       color: #1e1e1e;
+      margin-top: 18px;
     }
   }
 `
