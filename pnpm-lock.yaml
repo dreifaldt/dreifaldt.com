@@ -9,7 +9,7 @@ dependencies:
     version: 8.13.3(react-dom@18.2.0)(react@18.2.0)(three@0.146.0)
   next:
     specifier: 13.4.6
-    version: 13.4.6(react-dom@18.2.0)(react@18.2.0)(sass@1.56.1)
+    version: 13.4.6(react-dom@18.2.0)(react@18.2.0)(sass@1.63.4)
   react:
     specifier: 18.2.0
     version: 18.2.0
@@ -61,8 +61,8 @@ devDependencies:
     specifier: ^4.6.0
     version: 4.6.0(eslint@8.43.0)
   sass:
-    specifier: ^1.56.1
-    version: 1.56.1
+    specifier: ^1.63.4
+    version: 1.63.4
   typescript:
     specifier: 4.8.4
     version: 4.8.4
@@ -2234,7 +2234,7 @@ packages:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
     dev: true
 
-  /next@13.4.6(react-dom@18.2.0)(react@18.2.0)(sass@1.56.1):
+  /next@13.4.6(react-dom@18.2.0)(react@18.2.0)(sass@1.63.4):
     resolution: {integrity: sha512-sjVqjxU+U2aXZnYt4Ud6CTLNNwWjdSfMgemGpIQJcN3Z7Jni9xRWbR0ie5fQzCg87aLqQVhKA2ud2gPoqJ9lGw==}
     engines: {node: '>=16.8.0'}
     hasBin: true
@@ -2259,7 +2259,7 @@ packages:
       postcss: 8.4.14
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-      sass: 1.56.1
+      sass: 1.63.4
       styled-jsx: 5.1.1(react@18.2.0)
       watchpack: 2.4.0
       zod: 3.21.4
@@ -2658,9 +2658,9 @@ packages:
       is-regex: 1.1.4
     dev: true
 
-  /sass@1.56.1:
-    resolution: {integrity: sha512-VpEyKpyBPCxE7qGDtOcdJ6fFbcpOM+Emu7uZLxVrkX8KVU/Dp5UF7WLvzqRuUhB6mqqQt1xffLoG+AndxTZrCQ==}
-    engines: {node: '>=12.0.0'}
+  /sass@1.63.4:
+    resolution: {integrity: sha512-Sx/+weUmK+oiIlI+9sdD0wZHsqpbgQg8wSwSnGBjwb5GwqFhYNwwnI+UWZtLjKvKyFlKkatRK235qQ3mokyPoQ==}
+    engines: {node: '>=14.0.0'}
     hasBin: true
     dependencies:
       chokidar: 3.5.3
