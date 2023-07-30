@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@react-three/drei':
-    specifier: ^9.78.2
-    version: 9.78.2(@react-three/fiber@8.13.6)(@types/three@0.152.1)(react-dom@18.2.0)(react@18.2.0)(three@0.154.0)
+    specifier: ^9.80.0
+    version: 9.80.0(@react-three/fiber@8.13.6)(@types/three@0.152.1)(react-dom@18.2.0)(react@18.2.0)(three@0.154.0)
   '@react-three/fiber':
     specifier: ^8.13.6
     version: 8.13.6(react-dom@18.2.0)(react@18.2.0)(three@0.154.0)
@@ -337,8 +337,8 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.14
     dev: false
 
-  /@mediapipe/tasks-vision@0.10.2-rc2:
-    resolution: {integrity: sha512-b9ar6TEUo8I07n/jXSuKDu5HgzkDah9pe4H8BYpcubhCEahlfDD5ixE+9SQyJM4HXHXdF9nN/wRQT7rEnLz7Gg==}
+  /@mediapipe/tasks-vision@0.10.2:
+    resolution: {integrity: sha512-d8Q9uRK89ZRWmED2JLI9/blpJcfdbh0iEUuMo8TgkMzNfQBY1/GC0FEJWrairTwHkxIf6Oud1vFBP+aHicWqJA==}
     dev: false
 
   /@next/env@13.4.12:
@@ -521,8 +521,8 @@ packages:
     resolution: {integrity: sha512-POu8Mk0hIU3lRXB3bGIGe4VHIwwDsQyoD1F394OK7STTiX9w4dG3cTLljjYswkQN+hDSHRrj4O36kuVa7KPU8Q==}
     dev: false
 
-  /@react-three/drei@9.78.2(@react-three/fiber@8.13.6)(@types/three@0.152.1)(react-dom@18.2.0)(react@18.2.0)(three@0.154.0):
-    resolution: {integrity: sha512-8lq4gVOJfqyKjONmocyI5rPwspt1DMD6XA+WMhLNL8v5+J9Gigb0WKfK9A5nISSGJErmdZ0yOhM3mpO8/6vOJw==}
+  /@react-three/drei@9.80.0(@react-three/fiber@8.13.6)(@types/three@0.152.1)(react-dom@18.2.0)(react@18.2.0)(three@0.154.0):
+    resolution: {integrity: sha512-quBD0Ap7ygf9Yg94keIQpQNnveNSKoZUge9ybHd6UgE9QTdpfkPF3YgzTJLbDEoZKepCTE9ngpwUgFy+cpL9Pg==}
     peerDependencies:
       '@react-three/fiber': '>=8.0'
       react: '>=18.0'
@@ -533,7 +533,7 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.22.5
-      '@mediapipe/tasks-vision': 0.10.2-rc2
+      '@mediapipe/tasks-vision': 0.10.2
       '@react-spring/three': 9.6.1(@react-three/fiber@8.13.6)(react@18.2.0)(three@0.154.0)
       '@react-three/fiber': 8.13.6(react-dom@18.2.0)(react@18.2.0)(three@0.154.0)
       '@use-gesture/react': 10.2.27(react@18.2.0)
@@ -549,6 +549,7 @@ packages:
       react-composer: 5.0.3(react@18.2.0)
       react-dom: 18.2.0(react@18.2.0)
       react-merge-refs: 1.1.0
+      stats-gl: 1.0.4
       stats.js: 0.17.0
       suspend-react: 0.1.3(react@18.2.0)
       three: 0.154.0
@@ -2893,6 +2894,10 @@ packages:
   /source-map-js@1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
+
+  /stats-gl@1.0.4:
+    resolution: {integrity: sha512-oxo13HHonoMWIYcrIu4xCk8IcFEFaqAOkMOMIyfvZFxNZzGy+jnW8sy0W3VfEjKQd5JX0Kp2KhePAKhtI6/TSw==}
+    dev: false
 
   /stats.js@0.17.0:
     resolution: {integrity: sha512-hNKz8phvYLPEcRkeG1rsGmV5ChMjKDAWU7/OJJdDErPBNChQXxCo3WZurGpnWc6gZhAzEPFad1aVgyOANH1sMw==}
