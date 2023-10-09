@@ -17,13 +17,13 @@ export default function BotPage() {
 
   const Conversation: FC<ConversationProps> = ({ conversation }) => {
     return (
-      <ConversationWrapper>
+      <Messages>
         {conversation.map((message, index) => (
-          <div key={index} style={{ alignSelf: index ? 'start' : 'end' }}>
+          <Message key={index} isOdd={index % 2 === 0}>
             {message}
-          </div>
+          </Message>
         ))}
-      </ConversationWrapper>
+      </Messages>
     )
   }
 
@@ -42,12 +42,13 @@ export default function BotPage() {
       <Suspense fallback={<Loading />}>
         <Span>
           <h1>&lt; RoBot &gt;</h1>
-          <Conversation conversation={conversation} />
-          <form onSubmit={handleSubmit}>
-            <input type="text" value={inputValue} onChange={handleInputChange} />
-            <input type="submit" value="Submit" />
-          </form>
         </Span>
+
+        <Conversation conversation={conversation} />
+        <form onSubmit={handleSubmit}>
+          <input type="text" value={inputValue} onChange={handleInputChange} />
+          <input type="submit" value="Submit" />
+        </form>
       </Suspense>
     </Grid>
   )
@@ -65,7 +66,6 @@ const Grid = styled.div`
 
   div {
     line-height: 32px;
-    display: inline-block;
     color: ${theme.colors.white};
     font-size: 24px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
@@ -88,8 +88,9 @@ const Grid = styled.div`
   }
 `
 
-const ConversationWrapper = styled.div`
+const Messages = styled.div`
   display: flex;
+  flex-direction: column;
   margin: 18px;
   padding: 18px;
   background-color: rebeccapurple;
@@ -122,4 +123,12 @@ const Span = styled.span`
       cursor: pointer;
     }
   }
+`
+const Message = styled.div<{ isOdd: boolean }>`
+  padding: 8px;
+  margin: 4px;
+  border-radius: 8px;
+  background-color: ${({ isOdd }) => (isOdd ? '#eee' : '#007bff')};
+  color: ${({ isOdd }) => (isOdd ? '#333' : '#fff')};
+  align-self: ${({ isOdd }) => (isOdd ? 'flex-start' : 'flex-end')};
 `
