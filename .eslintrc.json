@@ -4,11 +4,11 @@
     "eslint:recommended",
     "plugin:react/recommended",
     "plugin:prettier/recommended",
-    "plugin:@typescript-eslint/recommended",
+
     "plugin:import/typescript",
     "prettier"
   ],
-  "plugins": ["prettier", "react", "react-hooks", "@typescript-eslint", "import"],
+  "plugins": ["prettier", "react", "react-hooks", "import"],
   "rules": {
     "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
     "import/no-unresolved": "error",
