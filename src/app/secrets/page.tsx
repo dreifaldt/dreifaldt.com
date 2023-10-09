@@ -3,44 +3,29 @@
 import { Suspense } from 'react'
 import styled from 'styled-components'
 import Loading from './loading'
-import { theme } from '../theme/theme'
-import Link from 'next/link'
+import { theme } from '../../theme/theme'
 
-export default function Home() {
+export default function SecretsPage() {
   return (
     <Grid>
       <Suspense fallback={<Loading />}>
         <Span>
-          <h1>&lt; DREIFALDT &gt;</h1>
+          <h1>&lt; SECRETS &gt;</h1>
         </Span>
-        <div>
-          Information regarding previous endevours can be found on my{' '}
-          <Link href="https://www.linkedin.com/in/erik-dreifaldt-293a0795/">
-            <div className="blue-underline">LinkedIn</div>
-          </Link>
-          .
-          <br />
-          <br />
-          Interested in working with me?{' '}
-          <Link href="mailto:erik@dreifaldt.com">
-            <div className="orange-underline">Let me know by email</div>
-          </Link>
-          .<br />
-          <br />
-          Have a great day,
-          <br />
-          <div className="grey">— Erik</div>
-        </div>
       </Suspense>
     </Grid>
   )
 }
 
 const Grid = styled.div`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
   background-color: ${theme.colors.black};
   display: flex;
   flex: 1;
-  height: 100vh;
   align-items: center;
   justify-content: center;
   flex-direction: column;
@@ -48,7 +33,7 @@ const Grid = styled.div`
 
   div {
     line-height: 32px;
-    display: inline-block;
+    display: inline;
     color: ${theme.colors.white};
     font-size: 24px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
@@ -66,7 +51,6 @@ const Grid = styled.div`
 
     .grey {
       color: #1e1e1e;
-      margin-top: 18px;
     }
   }
 `
