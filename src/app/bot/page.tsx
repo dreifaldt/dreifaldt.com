@@ -44,11 +44,11 @@ export default function BotPage() {
           <h1>&lt; RoBot &gt;</h1>
         </Span>
 
-        <Conversation conversation={conversation} />
         <form onSubmit={handleSubmit}>
           <input type="text" value={inputValue} onChange={handleInputChange} />
           <input type="submit" value="Submit" />
         </form>
+        <Conversation conversation={conversation} />
       </Suspense>
     </Grid>
   )
