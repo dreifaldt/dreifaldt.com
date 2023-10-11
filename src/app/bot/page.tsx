@@ -17,7 +17,7 @@ export default function BotPage() {
     { text: 'Hello, I am Vendy. How can I help you?', sender: Sender.bot },
   ])
 
-  const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value)
   }
 
