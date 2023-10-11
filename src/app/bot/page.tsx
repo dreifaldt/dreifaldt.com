@@ -41,7 +41,7 @@ export default function BotPage() {
     <Grid>
       <Suspense fallback={<Loading />}>
         <Span>
-          <h1>&lt; RoBot &gt;</h1>
+          <h1>&lt; Vendy &gt;</h1>
         </Span>
 
         <form onSubmit={handleSubmit}>
