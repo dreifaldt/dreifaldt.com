@@ -52,7 +52,7 @@ export const MessageList = styled.div`
 `
 export const MessageItem = styled.li<Message>`
   margin: 5px 0;
-  text-align: ${(props) => (props.sender === 'user' ? 'left' : 'right')};
+  text-align: ${(props) => (props.sender === 'user' ? 'right' : 'left')};
   font-size: 16px;
   color: ${(props) => (props.sender === 'user' ? theme.colors.white : theme.colors.cta)};
   font-weight: ${(props) => (props.sender === 'user' ? 500 : 250)};
