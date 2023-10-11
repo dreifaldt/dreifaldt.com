@@ -1,40 +1,30 @@
 'use client'
 
-import { ChangeEvent, FC, FormEvent, Suspense, useState } from 'react'
+import { ChangeEvent, FormEvent, Suspense, useState } from 'react'
 import styled from 'styled-components'
 
 import Loading from './loading'
-import { theme } from '../../theme/theme'
-import { log } from 'console'
 
-type ConversationProps = {
-  conversation: string[]
-}
+// how do I change this import to be @/components?
+
+import { theme } from '@/theme'
+import { Message, Sender } from '@/components/form/types'
+import { MessageList, Form, MessageItem } from '@/components'
 
 export default function BotPage() {
-  const [inputValue, setInputValue] = useState('')
-  const [conversation, setConversation] = useState<string[]>([])
+  const [value, setValue] = useState('')
+  const [messages, setMessages] = useState<Message[]>([
+    { text: 'Hello, I am Vendy. How can I help you?', sender: Sender.bot },
+  ])
 
-  const Conversation: FC<ConversationProps> = ({ conversation }) => {
-    return (
-      <Messages>
-        {conversation.map((message, index) => (
-          <Message key={index} isOdd={index % 2 === 0}>
-            {message}
-          </Message>
-        ))}
-      </Messages>
-    )
-  }
-
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value)
+  const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    setValue(event.target.value)
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setConversation((prevValue) => [...prevValue, inputValue])
-    setInputValue('')
+    setMessages((prevValue) => [...prevValue, { text: value, sender: Sender.user }])
+    setValue('')
   }
 
   return (
@@ -42,13 +32,20 @@ export default function BotPage() {
       <Suspense fallback={<Loading />}>
         <Span>
           <h1>&lt; Vendy &gt;</h1>
+          <MessageList>
+            <h2>Messages:</h2>
+            <ul>
+              {messages?.length > 0 &&
+                messages.map(({ sender, text }, index) => (
+                  <MessageItem key={index} sender={sender} text={text}>
+                    {text}
+                  </MessageItem>
+                ))}
+            </ul>
+          </MessageList>
         </Span>
 
-        <form onSubmit={handleSubmit}>
-          <input type="text" value={inputValue} onChange={handleInputChange} />
-          <input type="submit" value="Submit" />
-        </form>
-        <Conversation conversation={conversation} />
+        <Form value={value} onSubmit={handleSubmit} onChange={handleInputChange} />
       </Suspense>
     </Grid>
   )
@@ -78,7 +75,7 @@ const Grid = styled.div`
 
     .orange-underline {
       text-decoration: underline;
-      text-decoration-color: #f3a23c;
+      text-decoration-color: {theme.colors.accent};
     }
 
     .grey {
@@ -88,21 +85,11 @@ const Grid = styled.div`
   }
 `
 
-const Messages = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin: 18px;
-  padding: 18px;
-  background-color: rebeccapurple;
-  min-height: 200px;
-  min-width: 200px;
-  max-width: 500px;
-`
-
 const Span = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
 
   h1 {
     text-align: center;
@@ -123,12 +110,4 @@ const Span = styled.span`
       cursor: pointer;
     }
   }
-`
-const Message = styled.div<{ isOdd: boolean }>`
-  padding: 8px;
-  margin: 4px;
-  border-radius: 8px;
-  background-color: ${({ isOdd }) => (isOdd ? '#eee' : '#007bff')};
-  color: ${({ isOdd }) => (isOdd ? '#333' : '#fff')};
-  align-self: ${({ isOdd }) => (isOdd ? 'flex-start' : 'flex-end')};
 `

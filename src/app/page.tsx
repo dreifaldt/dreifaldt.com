@@ -3,7 +3,7 @@
 import { Suspense } from 'react'
 import styled from 'styled-components'
 import Loading from './loading'
-import { theme } from '../theme/theme'
+import { theme } from '../theme'
 import Link from 'next/link'
 
 export default function HomePage() {
