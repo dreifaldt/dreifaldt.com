@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@react-three/fiber':
-    specifier: 8.13.6
-    version: 8.13.6(react-dom@18.2.0)(react@18.2.0)(three@0.156.1)
+    specifier: 8.14.5
+    version: 8.14.5(react-dom@18.2.0)(react@18.2.0)(three@0.156.1)
   next:
     specifier: 13.5.4
     version: 13.5.4(@babel/core@7.23.0)(react-dom@18.2.0)(react@18.2.0)(sass@1.65.1)
@@ -1509,11 +1509,12 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /@react-three/fiber@8.13.6(react-dom@18.2.0)(react@18.2.0)(three@0.156.1):
-    resolution: {integrity: sha512-V49lldHcbsC7PMnnf4aYrMpHPQe8R7hJYL0AEFjqwioY0nkwga9A+Jx6lCLVG02DF03xwCfJZv5cjZCChffsWg==}
+  /@react-three/fiber@8.14.5(react-dom@18.2.0)(react@18.2.0)(three@0.156.1):
+    resolution: {integrity: sha512-Ee5OQyftkc076oh9ANgr2PpjBs8lXg/kt60DBiBE8l+TYDhfqdvEKEw8YF4wTz0xEmUQU5ULyX6PHShBLVaR7g==}
     peerDependencies:
       expo: '>=43.0'
       expo-asset: '>=8.4'
+      expo-file-system: '>=11.0'
       expo-gl: '>=11.0'
       react: '>=18.0'
       react-dom: '>=18.0'
@@ -1524,6 +1525,8 @@ packages:
         optional: true
       expo-asset:
         optional: true
+      expo-file-system:
+        optional: true
       expo-gl:
         optional: true
       react-dom:
@@ -1533,6 +1536,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.22.5
       '@types/react-reconciler': 0.26.7
+      base64-js: 1.5.1
       its-fine: 1.1.1(react@18.2.0)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -1854,6 +1858,10 @@ packages:
 
   /balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
+
+  /base64-js@1.5.1:
+    resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
+    dev: false
 
   /big-integer@1.6.51:
     resolution: {integrity: sha512-GPEid2Y9QU1Exl1rpO9B2IPJGHPSupF5GnVIP0blYvNOMer2bTvSWs1jGOUg04hTmu67nmLsQ9TBo1puaotBHg==}
