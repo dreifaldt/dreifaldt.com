@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@react-three/fiber':
-    specifier: 8.15.9
-    version: 8.15.9(react-dom@18.2.0)(react@18.2.0)(three@0.157.0)
+    specifier: 8.15.10
+    version: 8.15.10(react-dom@18.2.0)(react@18.2.0)(three@0.157.0)
   axios:
     specifier: ^1.6.0
     version: 1.6.0
@@ -1526,8 +1526,8 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /@react-three/fiber@8.15.9(react-dom@18.2.0)(react@18.2.0)(three@0.157.0):
-    resolution: {integrity: sha512-uiexE3/Pd2HW138DHUWjVENQa2eLVcin50I6CtfOoPwwjW9dqxGLxEXORhRMr70cpAja9kZ6D2yOxwchq/1zMQ==}
+  /@react-three/fiber@8.15.10(react-dom@18.2.0)(react@18.2.0)(three@0.157.0):
+    resolution: {integrity: sha512-mFTq3OvZfMh0+n6ttM9JidOF1U+e5KcBARqQHDlBdz+IadekQ6fY421wEnCyZ3vDqAE2CohWTSUdXeytSZxXwg==}
     peerDependencies:
       expo: '>=43.0'
       expo-asset: '>=8.4'
