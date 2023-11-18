@@ -18,10 +18,9 @@ export default function BotPage() {
   }
 
   return (
-    <div>
-      <Suspense fallback={<Loading />}>
-        <h1 className="text-3xl font-bold underline">&lt; Vendy &gt;</h1>
-      </Suspense>
+    <div className="content-center">
+      <h1 className="text-3xl font-bold underline">&lt; Vendy &gt;</h1>
+      <Suspense fallback={<Loading />}></Suspense>
     </div>
   )
 }

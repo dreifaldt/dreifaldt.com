@@ -4,7 +4,7 @@ import { ReactNode } from 'react'
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html style={{ backgroundColor: 'black' }}>
+    <html>
       <head></head>
       <body>{children}</body>
     </html>
