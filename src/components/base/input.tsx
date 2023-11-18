@@ -1,27 +1,23 @@
-import { FC } from 'react'
+import { ChangeEvent, FC, FormEvent } from 'react'
+import { IconButton } from './button'
 
 interface InputProps {
   value: string
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-  onSubmit: (event: React.FormEvent<HTMLButtonElement>) => void
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void
+  onSubmit: (event: FormEvent<HTMLButtonElement>) => void
 }
 
 export const Input: FC<InputProps> = ({ value, onChange, onSubmit }) => {
   return (
-    <>
+    <div className="flex rounded-xl border-2 border-gray-700 items-center py-2 px-4 m-4">
       <input
         type="text"
         placeholder="Type your message..."
         value={value}
         onChange={onChange}
-        className="w-full px-3 py-2 rounded-full border focus:outline-none focus:ring focus:border-blue-300"
+        className="w-full px-3 py-2 focus:outline-none bg-transparent"
       />
-      <button
-        onClick={onSubmit}
-        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring focus:bg-blue-600"
-      >
-        Send
-      </button>
-    </>
+      <IconButton onClick={onSubmit} />
+    </div>
   )
 }
