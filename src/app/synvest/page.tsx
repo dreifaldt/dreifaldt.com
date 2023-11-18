@@ -2,7 +2,6 @@
 
 import { Suspense } from 'react'
 import styled from 'styled-components'
-import { theme } from '../../theme'
 import Loading from '../loading'
 
 export default function SynvestPage() {
@@ -23,7 +22,7 @@ const Grid = styled.div`
   bottom: 0;
   right: 0;
   left: 0;
-  background-color: ${theme.colors.black};
+  background-color: 'black';
   display: flex;
   flex: 1;
   align-items: center;
@@ -34,7 +33,7 @@ const Grid = styled.div`
   div {
     line-height: 32px;
     display: inline;
-    color: ${theme.colors.white};
+    color: 'white';
     font-size: 24px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
       'Helvetica Neue', sans-serif;
@@ -64,14 +63,14 @@ const Span = styled.span`
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
       'Helvetica Neue', sans-serif;
-    color: ${theme.colors.white};
+    color: 'white';
     font-size: 38px;
 
-    @media (min-width: ${theme.breakpoints.small}px) {
+    @media (min-width: 640px) {
       font-size: 86px;
     }
 
-    @media (min-width: ${theme.breakpoints.large}px) {
+    @media (min-width: 1024px) {
       font-size: 110px;
     }
 
@@ -80,11 +79,3 @@ const Span = styled.span`
     }
   }
 `
-
-interface Announcement {
-  date: string
-  company: string
-  message: string
-  topic: string
-  attribute: string
-}

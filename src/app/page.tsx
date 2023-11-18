@@ -3,7 +3,6 @@
 import { Suspense } from 'react'
 import styled from 'styled-components'
 import Loading from './loading'
-import { theme } from '../theme'
 import Link from 'next/link'
 
 export default function HomePage() {
@@ -37,7 +36,7 @@ export default function HomePage() {
 }
 
 const Grid = styled.div`
-  background-color: ${theme.colors.black};
+  background-color: 'black';
   display: flex;
   flex: 1;
   height: 100vh;
@@ -49,7 +48,7 @@ const Grid = styled.div`
   div {
     line-height: 32px;
     display: inline-block;
-    color: ${theme.colors.white};
+    color: white;
     font-size: 24px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
       'Helvetica Neue', sans-serif;
@@ -80,14 +79,14 @@ const Span = styled.span`
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
       'Helvetica Neue', sans-serif;
-    color: ${theme.colors.white};
+    color: white;
     font-size: 38px;
 
-    @media (min-width: ${theme.breakpoints.small}px) {
+    @media (min-width: 640px) {
       font-size: 86px;
     }
 
-    @media (min-width: ${theme.breakpoints.large}px) {
+    @media (min-width: 1024px) {
       font-size: 110px;
     }
 
