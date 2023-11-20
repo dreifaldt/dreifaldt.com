@@ -9,9 +9,9 @@ export const Arrow: FC<Props> = ({ size = 24 }) => (
     <path
       d="M7 11L12 6L17 11M12 18V7"
       stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 )

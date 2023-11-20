@@ -9,15 +9,15 @@ interface InputProps {
 
 export const Input: FC<InputProps> = ({ value, onChange, onSubmit }) => {
   return (
-    <div className="flex rounded-xl border-2 border-gray-700 items-center py-2 px-4 m-4">
+    <div className={'flex rounded-xl border-2 border-gray-300 items-center py-2 px-4 mx-4 my-4'}>
       <input
         type="text"
-        placeholder="Type your message..."
+        placeholder="Skriv ditt meddelande..."
         value={value}
         onChange={onChange}
         className="w-full px-3 py-2 focus:outline-none bg-transparent"
       />
-      <IconButton onClick={onSubmit} />
+      <IconButton onClick={onSubmit} active={Boolean(value)} />
     </div>
   )
 }
