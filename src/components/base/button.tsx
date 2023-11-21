@@ -7,7 +7,7 @@ interface IconButtonProps {
 }
 
 export const IconButton: FC<IconButtonProps> = ({ onClick, active }) => {
-  const bgColor = active ? 'bg-green-500' : 'bg-slate-200'
+  const bgColor = active ? 'bg-slate-300' : 'bg-slate-200'
   return (
     <button onClick={onClick} className={`flex w-8 h-8 rounded-md items-center justify-center ${bgColor}`}>
       <Arrow />

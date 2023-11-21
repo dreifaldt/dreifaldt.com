@@ -7,7 +7,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html>
       <head></head>
       <body>{children}</body>
-      <footer></footer>
     </html>
   )
 }

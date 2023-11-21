@@ -9,7 +9,11 @@ interface InputProps {
 
 export const Input: FC<InputProps> = ({ value, onChange, onSubmit }) => {
   return (
-    <div className={'flex rounded-xl border-2 border-gray-300 items-center py-2 px-4 mx-4 my-4'}>
+    <div
+      className={
+        'flex rounded-xl border-2 border-gray-300 items-center py-2 px-4 mx-4 my-4 shadow-inner shadow-slate-200'
+      }
+    >
       <input
         type="text"
         placeholder="Skriv ditt meddelande..."
