@@ -1,11 +1,27 @@
 import { assistant } from '@/utils/assistant'
-import { AssistantProps } from '@/utils/assistant/types'
+import { AssistantProps, RunProps } from '@/utils/assistant/types'
 import { useQuery } from '@tanstack/react-query'
 
-export const useAssistantResponse = ({ threadId }: AssistantProps) => {
+export const useRunStatus = ({ threadId, runId }: RunProps) => {
+  console.log('useRunStatus', { runId, threadId })
+
+  return useQuery({
+    enabled: !!runId && !!threadId,
+    queryFn: () => assistant.getRunStatus({ runId, threadId }),
+    queryKey: ['runStatus'],
+    refetchInterval: 5000,
+  })
+}
+
+export const useResponseList = ({ threadId }: AssistantProps) => {
   return useQuery({
     enabled: !!threadId,
     queryFn: () => assistant.getResponse({ threadId }),
-    queryKey: ['assistantResponse'],
+    queryKey: ['responseList'],
   })
+}
+
+export const assistantQuery = {
+  useResponseList,
+  useRunStatus,
 }
