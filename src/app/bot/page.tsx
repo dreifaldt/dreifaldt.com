@@ -5,12 +5,21 @@ import { MIXPANEL_TOKEN } from '@/utils/env'
 import mixpanel from 'mixpanel-browser'
 import { Thread } from 'openai/resources/beta/threads/threads'
 import { ChangeEvent, FormEvent, Suspense, useEffect, useState } from 'react'
-import { ThreadMessage } from 'openai/resources/beta/threads/messages/messages'
+import {
+  MessageContentImageFile,
+  MessageContentText,
+  ThreadMessage,
+} from 'openai/resources/beta/threads/messages/messages'
 import { Input, Message } from '@/components'
 import Loading from './loading'
-// import { query } from '@/query'
+import { query } from '@/query'
 import { Run } from 'openai/resources/beta/threads/runs/runs'
-import { openAi } from '@/api/apiClient'
+
+type MessageContent = MessageContentImageFile | MessageContentText
+
+function isMessageContentText(content: MessageContent): content is MessageContentText {
+  return (content as MessageContentText).text !== undefined
+}
 
 export default function BotPage() {
   const [message, setMessage] = useState('')
@@ -18,10 +27,17 @@ export default function BotPage() {
   const [threadMessage, setThreadMessage] = useState<ThreadMessage | null>(null)
   const [run, setRun] = useState<Run | any>(null)
 
-  const [messages, setMessages] = useState<string[]>([])
+  // const { refetch } = query.useRunStatus({ runId: run?.id || '', threadId: thread?.id || '' })
+  const { data, refetch } = query.useResponseList({ threadId: thread?.id || '' })
 
-  // const statusQuery = query.useRunStatus({ runId: run?.id || '', threadId: thread?.id || '' })
-  // const responseQuery = query.useResponseList({ threadId: thread?.id || '' })
+  const conversation =
+    data
+      ?.map((item) => {
+        if (isMessageContentText(item.content[0])) {
+          return { role: item.role, text: item.content[0].text.value }
+        }
+      })
+      .reverse() || []
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setMessage(event.target.value)
@@ -53,7 +69,6 @@ export default function BotPage() {
     const run = await assistant.createThreadRun({ threadId })
     setRun(run)
 
-    setMessages((prevValue) => [...prevValue, message])
     setMessage('')
   }
 
@@ -73,20 +88,14 @@ export default function BotPage() {
 
   return (
     <div className="container flex flex-col justify-end h-screen">
-      {messages.map((message, index) => (
-        <Message key={index} sender={index % 2 ? 'User' : 'Snygg-Per'} text={message} />
-      ))}
+      {conversation.map((message, index) => {
+        const sender = message?.role === 'assistant' ? 'Snygg-Per' : 'User'
+        const messageText = message?.text || ''
+        return <Message key={index} sender={sender} text={messageText} />
+      })}
       <Input value={message} onChange={handleInputChange} onSubmit={handleSubmit} />
       <Suspense fallback={<Loading />}></Suspense>
-      <button
-        onClick={async () => {
-          const messages = await openAi.beta.threads.messages.list(thread?.id || '')
-
-          console.log({ messages })
-        }}
-      >
-        Log
-      </button>
+      <button onClick={() => refetch()}>Refetch</button>
     </div>
   )
 }

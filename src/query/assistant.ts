@@ -3,11 +3,12 @@ import { AssistantProps, RunProps } from '@/utils/assistant/types'
 import { useQuery } from '@tanstack/react-query'
 
 export const useRunStatus = ({ threadId, runId }: RunProps) => {
-  console.log('useRunStatus', { runId, threadId })
-
   return useQuery({
     enabled: !!runId && !!threadId,
-    queryFn: () => assistant.getRunStatus({ runId, threadId }),
+    queryFn: async () => {
+      const reponse = await assistant.getRunStatus({ runId, threadId })
+      return reponse
+    },
     queryKey: ['runStatus'],
     refetchInterval: 5000,
   })
@@ -16,7 +17,10 @@ export const useRunStatus = ({ threadId, runId }: RunProps) => {
 export const useResponseList = ({ threadId }: AssistantProps) => {
   return useQuery({
     enabled: !!threadId,
-    queryFn: () => assistant.getResponse({ threadId }),
+    queryFn: async () => {
+      const response = await assistant.getResponse({ threadId })
+      return response.data
+    },
     queryKey: ['responseList'],
   })
 }
