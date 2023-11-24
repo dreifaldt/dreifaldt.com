@@ -1,12 +1,18 @@
 'use client'
+import { ReactNode, useState } from 'react'
+// These styles apply to every route in the application
+import './globals.css'
+import { Provider } from '@/utils/provider'
 
-import { ReactNode } from 'react'
+// Create a client
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html style={{ backgroundColor: 'black' }}>
+    <html>
       <head></head>
-      <body>{children}</body>
+      <body>
+        <Provider>{children}</Provider>
+      </body>
     </html>
   )
 }

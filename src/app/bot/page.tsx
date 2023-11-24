@@ -1,113 +1,101 @@
 'use client'
 
-import { ChangeEvent, FormEvent, Suspense, useState } from 'react'
-import styled from 'styled-components'
-
+import { assistant } from '@/utils/assistant'
+import { MIXPANEL_TOKEN } from '@/utils/env'
+import mixpanel from 'mixpanel-browser'
+import { Thread } from 'openai/resources/beta/threads/threads'
+import { ChangeEvent, FormEvent, Suspense, useEffect, useState } from 'react'
+import {
+  MessageContentImageFile,
+  MessageContentText,
+  ThreadMessage,
+} from 'openai/resources/beta/threads/messages/messages'
+import { Input, Message } from '@/components'
 import Loading from './loading'
+import { query } from '@/query'
+import { Run } from 'openai/resources/beta/threads/runs/runs'
 
-// how do I change this import to be @/components?
+type MessageContent = MessageContentImageFile | MessageContentText
 
-import { theme } from '@/theme'
-import { Message, Sender } from '@/components/form/types'
-import { MessageList, Form, MessageItem } from '@/components'
-
-export default function BotPage() {
-  const [value, setValue] = useState('')
-  const [messages, setMessages] = useState<Message[]>([
-    { text: 'Hello, I am Vendy. How can I help you?', sender: Sender.bot },
-  ])
-
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setValue(event.target.value)
-  }
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setMessages((prevValue) => [...prevValue, { text: value, sender: Sender.user }])
-    setValue('')
-  }
-
-  return (
-    <Grid>
-      <Suspense fallback={<Loading />}>
-        <Span>
-          <h1>&lt; Vendy &gt;</h1>
-          <MessageList>
-            <h2>Messages:</h2>
-            <ul>
-              {messages?.length > 0 &&
-                messages.map(({ sender, text }, index) => (
-                  <MessageItem key={index} sender={sender} text={text}>
-                    {text}
-                  </MessageItem>
-                ))}
-            </ul>
-          </MessageList>
-        </Span>
-
-        <Form value={value} onSubmit={handleSubmit} onChange={handleInputChange} />
-      </Suspense>
-    </Grid>
-  )
+function isMessageContentText(content: MessageContent): content is MessageContentText {
+  return (content as MessageContentText).text !== undefined
 }
 
-const Grid = styled.div`
-  background-color: ${theme.colors.black};
-  display: flex;
-  flex: 1;
-  height: 100vh;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  padding: 24px;
+export default function BotPage() {
+  const [message, setMessage] = useState('')
+  const [thread, setThread] = useState<Thread | null>(null)
+  const [threadMessage, setThreadMessage] = useState<ThreadMessage | null>(null)
+  const [run, setRun] = useState<Run | any>(null)
 
-  div {
-    line-height: 32px;
-    color: ${theme.colors.white};
-    font-size: 24px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
-      'Helvetica Neue', sans-serif;
+  // const { refetch } = query.useRunStatus({ runId: run?.id || '', threadId: thread?.id || '' })
+  const { data, refetch } = query.useResponseList({ threadId: thread?.id || '' })
 
-    .blue-underline {
-      text-decoration: underline;
-      text-decoration-color: #3785f7;
-    }
+  const conversation =
+    data
+      ?.map((item) => {
+        if (isMessageContentText(item.content[0])) {
+          return { role: item.role, text: item.content[0].text.value }
+        }
+      })
+      .reverse() || []
 
-    .orange-underline {
-      text-decoration: underline;
-      text-decoration-color: {theme.colors.accent};
-    }
-
-    .grey {
-      color: #1e1e1e;
-      margin-top: 18px;
-    }
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setMessage(event.target.value)
   }
-`
 
-const Span = styled.span`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
+  const handleSubmit = async (event: FormEvent<HTMLButtonElement>) => {
+    event.preventDefault()
 
-  h1 {
-    text-align: center;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
-      'Helvetica Neue', sans-serif;
-    color: ${theme.colors.white};
-    font-size: 38px;
+    let threadId = thread?.id
 
-    @media (min-width: ${theme.breakpoints.small}px) {
-      font-size: 86px;
+    if (!threadId) {
+      const thread = await assistant.createThread()
+      setThread(thread)
+      threadId = thread.id
+
+      // Set this to a unique identifier for the user performing the event.
+      mixpanel.identify(thread.id)
+      // Track an event. It can be anything, but in this example, we're tracking a Sign Up event.
+      mixpanel.track('THREAD_CREATED', thread)
+
+      alert('Created message thread!\n\nYou can now chat with Snygg-Per')
+
+      return
     }
 
-    @media (min-width: ${theme.breakpoints.large}px) {
-      font-size: 110px;
-    }
+    const threadMessage = await assistant.createMessage({ content: message, threadId })
+    setThreadMessage(threadMessage)
 
-    :hover {
-      cursor: pointer;
-    }
+    const run = await assistant.createThreadRun({ threadId })
+    setRun(run)
+
+    setMessage('')
   }
-`
+
+  useEffect(() => {
+    try {
+      console.log('INIT_MIXPANEL')
+      mixpanel.init(MIXPANEL_TOKEN, {
+        debug: false,
+        ignore_dnt: true,
+        persistence: 'localStorage',
+        track_pageview: false,
+      })
+    } catch (error) {
+      console.log({ error })
+    }
+  }, [])
+
+  return (
+    <div className="container flex flex-col justify-end h-screen">
+      {conversation.map((message, index) => {
+        const sender = message?.role === 'assistant' ? 'Snygg-Per' : 'User'
+        const messageText = message?.text || ''
+        return <Message key={index} sender={sender} text={messageText} />
+      })}
+      <Input value={message} onChange={handleInputChange} onSubmit={handleSubmit} />
+      <Suspense fallback={<Loading />}></Suspense>
+      <button onClick={() => refetch()}>Refetch</button>
+    </div>
+  )
+}
