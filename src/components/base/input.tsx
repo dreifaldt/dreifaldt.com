@@ -4,14 +4,14 @@ import { IconButton } from './button'
 interface InputProps {
   value: string
   onChange: (event: ChangeEvent<HTMLInputElement>) => void
-  onSubmit: (event: FormEvent<HTMLButtonElement>) => void
+  onSubmit: (event: FormEvent<HTMLButtonElement | HTMLInputElement>) => void
 }
 
 export const Input: FC<InputProps> = ({ value, onChange, onSubmit }) => {
   return (
     <div
       className={
-        'flex rounded-xl border-2 border-gray-300 items-center py-2 px-4 mx-4 my-4 shadow-inner shadow-slate-200'
+        'flex rounded-xl border-2 border-gray-300 items-center py-2 px-4 mx-4 my-4 shadow-inner shadow-slate-200 mt-auto'
       }
     >
       <input
@@ -20,6 +20,10 @@ export const Input: FC<InputProps> = ({ value, onChange, onSubmit }) => {
         value={value}
         onChange={onChange}
         className="w-full px-3 py-2 focus:outline-none bg-transparent"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') onSubmit(e)
+          if (e.key === 'Escape') onChange({ target: { value: '' } } as ChangeEvent<HTMLInputElement>)
+        }}
       />
       <IconButton onClick={onSubmit} active={Boolean(value)} />
     </div>
