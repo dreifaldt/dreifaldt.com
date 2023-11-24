@@ -1,8 +1,8 @@
 const getEnvVariables = () => {
   const envVariables = {
     MIXPANEL_TOKEN: process.env.NEXT_PUBLIC_MIXPANEL_TOKEN,
-    OPENAI_TOKEN: process.env.NEXT_PUBLIC_OPENAI_TOKEN,
     NETWORK_LOGGER: !!process.env.NEXT_PUBLIC_NETWORK_LOGGER,
+    OPENAI_TOKEN: process.env.NEXT_PUBLIC_OPENAI_TOKEN,
   } as EnvironmentVariables
 
   Object.entries(envVariables).forEach(([key, value]) => {
