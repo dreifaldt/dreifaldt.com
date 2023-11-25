@@ -1,5 +1,5 @@
 'use client'
-import { ReactNode, useState } from 'react'
+import { ReactNode } from 'react'
 // These styles apply to every route in the application
 import './globals.css'
 import { Provider } from '@/utils/provider'

@@ -3,6 +3,7 @@ import { IconButton } from './button'
 
 interface InputProps {
   value: string
+  isLoading?: boolean
   onChange: (event: ChangeEvent<HTMLInputElement>) => void
   onSubmit: (event: FormEvent<HTMLButtonElement | HTMLInputElement>) => void
 }
