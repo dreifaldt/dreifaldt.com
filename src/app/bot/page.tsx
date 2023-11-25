@@ -1,7 +1,7 @@
 'use client'
 
 import { ChangeEvent, FormEvent, Suspense, useState } from 'react'
-import { Input, Message } from '@/app/components'
+import { Input, Message } from '@/components'
 import Loading from './loading'
 import { useMixpanel } from '@/hooks/useMixpanel'
 import { queries } from '@/queries'

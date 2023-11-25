@@ -10,7 +10,7 @@ interface InputProps {
   onSubmit: (event: FormEvent<HTMLButtonElement | HTMLInputElement>) => void
 }
 
-export const Input: FC<InputProps> = ({ value, isLoading, onChange, onSubmit }) => {
+export const Input: FC<InputProps> = ({ value, isLoading, onChange = null, onSubmit = null }) => {
   return (
     <>
       <div
