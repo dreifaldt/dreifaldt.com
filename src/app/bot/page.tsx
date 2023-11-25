@@ -49,7 +49,7 @@ export default function BotPage() {
     }
   }
 
-  const onSubmit = async (event: FormEvent<HTMLButtonElement | HTMLInputElement>) => {
+  const onSubmit = async (event: FormEvent<HTMLButtonElement | HTMLInputElement | HTMLFormElement>) => {
     event.preventDefault()
 
     if (!thread) return
