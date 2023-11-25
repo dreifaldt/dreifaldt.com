@@ -10,7 +10,7 @@ import { Run } from 'openai/resources/beta/threads/runs/runs'
 import { Thread } from 'openai/resources/beta/threads/threads'
 import { ThreadMessage, ThreadMessagesPage } from 'openai/resources/beta/threads/messages/messages'
 import { isMessageContentText } from '@/utils/assistant/types'
-import { extractHttpsLinks } from '@/utils/regex'
+import { extractHttpsLinks } from '@/utils/text'
 
 export default function BotPage() {
   useMixpanel()
@@ -67,12 +67,9 @@ export default function BotPage() {
   }
 
   return (
-    <form className="flex flex-col justify-end h-screen bg-yellow-50 w-full">
+    <div className="flex flex-col justify-end h-screen bg-yellow-50 w-full">
       {conversation.map((message, index) => {
         const sender = message.role === 'assistant' ? 'Snygg-Per' : 'User'
-
-        const links = extractHttpsLinks(message.text)
-        console.log({ links })
 
         return <Message key={index} sender={sender} text={message.text} />
       })}
@@ -80,6 +77,6 @@ export default function BotPage() {
       <Input value={question} onChange={onChange} onSubmit={onSubmit} isLoading={isLoading} />
 
       <Suspense fallback={<Loading />}></Suspense>
-    </form>
+    </div>
   )
 }
