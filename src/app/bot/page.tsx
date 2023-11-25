@@ -67,7 +67,7 @@ export default function BotPage() {
   }
 
   return (
-    <div className="flex flex-col justify-end h-screen bg-yellow-50 w-full">
+    <form className="flex flex-col justify-end h-screen bg-yellow-50 w-full">
       {conversation.map((message, index) => {
         const sender = message.role === 'assistant' ? 'Snygg-Per' : 'User'
 
@@ -80,6 +80,6 @@ export default function BotPage() {
       <Input value={question} onChange={onChange} onSubmit={onSubmit} isLoading={isLoading} />
 
       <Suspense fallback={<Loading />}></Suspense>
-    </div>
+    </form>
   )
 }
