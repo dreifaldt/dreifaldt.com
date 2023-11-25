@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { ChangeEvent, FormEvent, Suspense, useState } from 'react'
 import { Input, Message } from '@/components'
@@ -67,7 +67,7 @@ export default function BotPage() {
   }
 
   return (
-    <div className="container flex flex-col justify-end h-screen bg-yellow-50 w-full bg-opacity-10">
+    <div className="flex flex-col justify-end h-screen bg-yellow-50 w-full">
       {conversation.map((message, index) => {
         const sender = message.role === 'assistant' ? 'Snygg-Per' : 'User'
 

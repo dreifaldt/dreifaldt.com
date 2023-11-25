@@ -17,7 +17,7 @@ export const Input: FC<InputProps> = ({ value, isLoading, onChange, onSubmit }) 
           'flex rounded-xl border-2 border-gray-300 items-center py-2 px-4 mx-4 my-4 shadow-inner shadow-slate-200 mt-auto'
         }
       >
-        {isLoading && (
+        {!isLoading && (
           <div className="flexbox">
             <div className="triple-spinner" />
           </div>
