@@ -10,8 +10,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.8.4",
-    "@tanstack/react-query-next-experimental": "^5.8.4",
+    "@tanstack/react-query": "^5.8.7",
+    "@tanstack/react-query-next-experimental": "^5.8.7",
     "axios": "^1.6.2",
     "mixpanel-browser": "^2.48.1",
     "next": "14.0.3",
