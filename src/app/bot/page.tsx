@@ -56,7 +56,10 @@ export default function BotPage() {
     setLoading(true)
 
     await api.addMessageToThread(thread, question)
+
+    setConversation((prevValue) => [...prevValue, { role: 'user', text: question }])
     setQuestion('')
+
     const run = await api.runAssistant(thread)
     await pollingRunStatus(thread, run)
     setLoading(false)
