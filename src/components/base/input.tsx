@@ -17,12 +17,13 @@ export const Input: FC<InputProps> = ({ value, isLoading, onChange, onSubmit }) 
           'flex rounded-xl border-2 border-gray-300 items-center py-2 px-4 mx-4 my-4 shadow-inner shadow-slate-200 mt-auto'
         }
       >
-        {!isLoading && (
+        {isLoading && (
           <div className="flexbox">
             <div className="triple-spinner" />
           </div>
         )}
         <input
+          disabled={isLoading}
           type="text"
           placeholder="Skriv ditt meddelande..."
           value={value}
@@ -33,7 +34,7 @@ export const Input: FC<InputProps> = ({ value, isLoading, onChange, onSubmit }) 
             if (e.key === 'Escape') onChange({ target: { value: '' } } as ChangeEvent<HTMLInputElement>)
           }}
         />
-        <IconButton onClick={onSubmit} active={Boolean(value)} />
+        <IconButton onClick={onSubmit} active={Boolean(value)} disabled={isLoading || !value} />
       </div>
     </>
   )
