@@ -10,6 +10,7 @@ import { Run } from 'openai/resources/beta/threads/runs/runs'
 import { Thread } from 'openai/resources/beta/threads/threads'
 import { ThreadMessage, ThreadMessagesPage } from 'openai/resources/beta/threads/messages/messages'
 import { isMessageContentText } from '@/utils/assistant/types'
+import { extractHttpsLinks } from '@/utils/regex'
 
 export default function BotPage() {
   useMixpanel()
@@ -69,6 +70,10 @@ export default function BotPage() {
     <div className="container flex flex-col justify-end h-screen bg-yellow-50 w-full bg-opacity-10">
       {conversation.map((message, index) => {
         const sender = message.role === 'assistant' ? 'Snygg-Per' : 'User'
+
+        const links = extractHttpsLinks(message.text)
+        console.log({ links })
+
         return <Message key={index} sender={sender} text={message.text} />
       })}
 
