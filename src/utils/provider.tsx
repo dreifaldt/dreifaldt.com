@@ -8,12 +8,10 @@ function Provider({ children }: any) {
   const [client] = useState(new QueryClient())
 
   return (
-    <>
-      <QueryClientProvider client={client}>
-        <ReactQueryStreamedHydration>{children}</ReactQueryStreamedHydration>
-        <ReactQueryDevtools initialIsOpen={true} />
-      </QueryClientProvider>
-    </>
+    <QueryClientProvider client={client}>
+      <ReactQueryStreamedHydration>{children}</ReactQueryStreamedHydration>
+      <ReactQueryDevtools initialIsOpen={true} />
+    </QueryClientProvider>
   )
 }
 

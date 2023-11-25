@@ -1,3 +1,4 @@
+'use client'
 import { FC, FormEvent } from 'react'
 import { Arrow } from '../icon/arrow'
 

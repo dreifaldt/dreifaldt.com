@@ -1,6 +1,7 @@
+'use client'
+
 import { ChangeEvent, FC, FormEvent } from 'react'
 import { IconButton } from './button'
-import '../../app/spinner.css'
 
 interface InputProps {
   value: string
