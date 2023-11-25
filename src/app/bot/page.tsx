@@ -10,7 +10,6 @@ import { Run } from 'openai/resources/beta/threads/runs/runs'
 import { Thread } from 'openai/resources/beta/threads/threads'
 import { ThreadMessage, ThreadMessagesPage } from 'openai/resources/beta/threads/messages/messages'
 import { isMessageContentText } from '@/utils/assistant/types'
-import { extractHttpsLinks } from '@/utils/text'
 
 export default function BotPage() {
   useMixpanel()
