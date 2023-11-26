@@ -1,16 +1,24 @@
+'use client'
+
+import { useMixpanel } from '@/hooks/useMixpanel'
+import { queries } from '@/queries'
 import Image from 'next/image'
+import { Run, Thread, ThreadMessage, ThreadMessagesPage } from 'openai/resources/beta/threads/index.mjs'
+import { useFormState } from 'react-dom'
+import { ChangeEvent, FormEvent, Suspense, useState } from 'react'
+import { api } from '@/api/apiClient'
+import { Input, Message } from '@/components'
+import Loading from './loading'
+import { isMessageContentText } from '@/utils/assistant/types'
 
 export default function Bot() {
-  useMixpanel()
-
-
+  const { data: thread } = queries.useGetThread()
+  useMixpanel(thread)
 
   const [conversation, setConversation] = useState<{ role: ThreadMessage['role']; text: string }[]>([])
 
   const [question, setQuestion] = useState('')
   const [isLoading, setLoading] = useState(false)
-
-  const { data: thread } = queries.useGetThread()
 
   const onChange = (event: ChangeEvent<HTMLInputElement>) => {
     setQuestion(event.target.value)
@@ -57,21 +65,18 @@ export default function Bot() {
   }
 
   return (
-    <main>
-    <div className="flex flex-col justify-end h-screen bg-yellow-50 w-full">
-      {conversation.map((message, index) => {
-        const sender = message.role === 'assistant' ? 'Snygg-Per' : 'User'
+    <Suspense fallback={<Loading />}>
+      <main>
+        <div className="flex flex-col justify-end h-screen bg-yellow-50 w-full">
+          {conversation.map((message, index) => {
+            const sender = message.role === 'assistant' ? 'Snygg-Per' : 'User'
 
-        return <Message key={index} sender={sender} text={message.text} />
-      })}
+            return <Message key={index} sender={sender} text={message.text} />
+          })}
 
-      <Input value={question} onChange={onChange} onSubmit={onSubmit} isLoading={isLoading} />
-
-      <Suspense fallback={<Loading />}></Suspense>
-    </div>
-  )
-}
-
-    </main>
+          <Input value={question} onChange={onChange} onSubmit={onSubmit} isLoading={isLoading} />
+        </div>
+      </main>
+    </Suspense>
   )
 }
