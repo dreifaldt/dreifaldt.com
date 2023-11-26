@@ -1,5 +1,3 @@
-'use client'
-
 import { api } from '@/api/apiClient'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { ThreadMessage } from 'openai/resources/beta/threads/messages/messages'
@@ -10,7 +8,6 @@ const useGetThread = () => {
   return useQuery({
     queryFn: api.createThread,
     queryKey: ['thread'],
-    staleTime: Infinity,
   })
 }
 const useCreateMessage = () => {
