@@ -12,7 +12,6 @@ const openai = new OpenAi({
 
 const createThread = async (): Promise<Thread> => {
   const thread = await openai.beta.threads.create()
-  console.log({ thread })
 
   return thread
 }
@@ -39,7 +38,6 @@ const checkRunStatus = async (thread: Thread, run: Run): Promise<Run> => {
 
 const getResponse = async (thread: Thread) => {
   const list = await openai.beta.threads.messages.list(thread.id)
-  console.log({ list })
 
   return list.data
 }

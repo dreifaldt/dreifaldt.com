@@ -40,8 +40,6 @@ export const Form: FC = () => {
 
       if (!question || !thread) return
 
-      console.log('sending question')
-
       const response = await sendRunAndGetMessage(question, thread)
 
       if (!response) return
