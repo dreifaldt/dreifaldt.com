@@ -1,5 +1,3 @@
-'use client'
-
 import { ChangeEvent, FC, FormEvent } from 'react'
 import { IconButton } from './button'
 
@@ -24,6 +22,7 @@ export const Input: FC<InputProps> = ({ value, isLoading, onChange, name }) => {
         </div>
       )}
       <input
+        id="quest"
         disabled={isLoading}
         name={name}
         type="text"

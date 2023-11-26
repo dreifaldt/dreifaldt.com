@@ -1,17 +1,11 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
 ## Getting Started
 
 First, run the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+# then
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -27,10 +21,35 @@ To learn more about Next.js, take a look at the following resources:
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI
+    participant ApiClient
+    participant Backend
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+    User->>UI: Clicks Submit Button
+    UI->>UI: Prevents default form submission
+    UI->>UI: Validates Thread Object
+    alt Thread Object Valid
+        UI->>UI: Sets isLoading to true
+        UI->>ApiClient: addMessageToThread(thread, question)
+        ApiClient->>Backend: POST /addMessage
+        Backend->>ApiClient: Acknowledges Message
+        ApiClient->>UI: Updates Conversation State with User Message
+        UI->>UI: Clears Question State
+        UI->>ApiClient: runAssistant(thread)
+        ApiClient->>Backend: POST /runAssistant
+        Backend->>ApiClient: Returns run object
+        loop Polling for Response
+            UI->>ApiClient: checkRunStatus(thread, run)
+            ApiClient->>Backend: GET /runStatus
+            Backend->>ApiClient: Returns Status
+            ApiClient->>UI: Status Response
+        end
+        UI->>UI: Sets isLoading to false
+        UI->>UI: Updates Conversation State with Assistant Message
+    else Thread Object Invalid
+        UI->>User: Shows Error Message
+    end
+```
