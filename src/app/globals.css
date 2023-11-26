@@ -2,41 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* TRIPLE SPINNER */
-.triple-spinner {
-  display: block;
-  position: relative;
-  width: 40px; /* Changed from 125px */
-  height: 40px; /* Changed from 125px */
-  border-radius: 50%;
-  border: 2px solid transparent;
-  border-top: 2px solid #ff5722;
-  -webkit-animation: spin 2s linear infinite;
-  animation: spin 2s linear infinite;
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
 }
 
-.triple-spinner::before,
-.triple-spinner::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  border: 2px solid transparent;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
 }
-.triple-spinner::before {
-  top: 2px; /* Adjusted based on new size */
-  left: 2px; /* Adjusted based on new size */
-  right: 2px; /* Adjusted based on new size */
-  bottom: 2px; /* Adjusted based on new size */
-  border-top-color: #ff9800;
-  -webkit-animation: spin 3s linear infinite;
-  animation: spin 3.5s linear infinite;
-}
-.triple-spinner::after {
-  top: 6px; /* Adjusted based on new size */
-  left: 6px; /* Adjusted based on new size */
-  right: 6px; /* Adjusted based on new size */
-  bottom: 6px; /* Adjusted based on new size */
-  border-top-color: #ffc107;
-  -webkit-animation: spin 1.5s linear infinite;
-  animation: spin 1.75s linear infinite;
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }

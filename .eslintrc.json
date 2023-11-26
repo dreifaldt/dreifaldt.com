@@ -5,11 +5,9 @@
   "parserOptions": {
     "project": "./tsconfig.json"
   },
-  "plugins": ["unused-imports", "@typescript-eslint"],
+  "plugins": ["@typescript-eslint"],
   "rules": {
     "no-unused-vars": "off", // or "@typescript-eslint/no-unused-vars": "off",
-    "unused-imports/no-unused-imports": "error",
-    "unused-imports/no-unused-vars": ["error"],
     "sort-keys": ["error", "asc", { "caseSensitive": true, "natural": false }]
   }
 }
