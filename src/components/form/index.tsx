@@ -71,7 +71,7 @@ export const Form: FC = () => {
       })}
 
       <form action={action} ref={formRef}>
-        <Input value={storedQuestion} onChange={onChange} name={'question'} isLoading={isLoading} />
+        <Input value={storedQuestion} onChange={onChange} name={'question'} />
       </form>
     </div>
   )
