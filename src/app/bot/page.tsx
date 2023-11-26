@@ -13,8 +13,6 @@ import { isMessageContentText } from '@/utils/assistant/types'
 import { log } from 'console'
 
 export default function Bot() {
-  // const { data: thread, error } = queries.useGetThread()
-
   // const thread: Thread = {
   //   created_at: 1337,
   //   id: 'DUMMY_TEST_THREAD',
@@ -22,62 +20,64 @@ export default function Bot() {
   //   object: 'thread',
   // }
 
-  //  useMixpanel(thread)
+  const { data: thread, error } = queries.useGetThread()
 
-  // const [conversation, setConversation] = useState<{ role: ThreadMessage['role']; text: string }[]>([])
+  useMixpanel(thread)
 
-  // const [question, setQuestion] = useState('')
-  // const [isLoading, setLoading] = useState(false)
+  const [conversation, setConversation] = useState<{ role: ThreadMessage['role']; text: string }[]>([])
 
-  // const onChange = (event: ChangeEvent<HTMLInputElement>) => {
-  //   setQuestion(event.target.value)
-  // }
+  const [question, setQuestion] = useState('')
+  const [isLoading, setLoading] = useState(false)
 
-  // const pollingRunStatus = async (thread: Thread, run: Run) => {
-  //   const response = await api.checkRunStatus(thread, run)
+  const onChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setQuestion(event.target.value)
+  }
 
-  //   if (response.status === 'completed') {
-  //     const response: ThreadMessagesPage = await api.getResponse(thread)
+  const pollingRunStatus = async (thread: Thread, run: Run) => {
+    const response = await api.checkRunStatus(thread, run)
 
-  //     const parsedConversation = response.data
-  //       .map((message) => {
-  //         const text = isMessageContentText(message.content[0]) ? message.content[0].text.value : ''
-  //         return { role: message.role, text }
-  //       })
-  //       .reverse()
+    if (response.status === 'completed') {
+      const response: ThreadMessagesPage = await api.getResponse(thread)
 
-  //     setConversation(parsedConversation)
-  //     return
-  //   } else if (response.status === 'requires_action') {
-  //     alert('requires action')
-  //   } else if (response.status === 'in_progress') {
-  //     pollingRunStatus(thread, run)
-  //   } else if (response.status === 'queued') {
-  //     pollingRunStatus(thread, run)
-  //   }
-  // }
+      const parsedConversation = response.data
+        .map((message) => {
+          const text = isMessageContentText(message.content[0]) ? message.content[0].text.value : ''
+          return { role: message.role, text }
+        })
+        .reverse()
 
-  // const onSubmit = async (event: FormEvent<HTMLButtonElement | HTMLInputElement | HTMLFormElement>) => {
-  //   event.preventDefault()
+      setConversation(parsedConversation)
+      return
+    } else if (response.status === 'requires_action') {
+      alert('requires action')
+    } else if (response.status === 'in_progress') {
+      pollingRunStatus(thread, run)
+    } else if (response.status === 'queued') {
+      pollingRunStatus(thread, run)
+    }
+  }
 
-  //   if (!thread) return
-  //   setLoading(true)
+  const onSubmit = async (event: FormEvent<HTMLButtonElement | HTMLInputElement | HTMLFormElement>) => {
+    event.preventDefault()
 
-  //   await api.addMessageToThread(thread, question)
+    if (!thread) return
+    setLoading(true)
 
-  //   setConversation((prevValue) => [...prevValue, { role: 'user', text: question }])
-  //   setQuestion('')
+    await api.addMessageToThread(thread, question)
 
-  //   const run = await api.runAssistant(thread)
-  //   await pollingRunStatus(thread, run)
-  //   setLoading(false)
-  // }
+    setConversation((prevValue) => [...prevValue, { role: 'user', text: question }])
+    setQuestion('')
+
+    const run = await api.runAssistant(thread)
+    await pollingRunStatus(thread, run)
+    setLoading(false)
+  }
 
   return (
     <Suspense fallback={<Loading />}>
       <main>
-        <h1>bot page</h1>
-        {/* <div className="flex flex-col justify-end h-screen bg-gray-100 w-full">
+        {/* <h1>bot page</h1> */}
+        <div className="flex flex-col justify-end h-screen bg-gray-100 w-full">
           {conversation.map((message, index) => {
             const sender = message.role === 'assistant' ? 'Snygg-Per' : 'User'
             return <Message key={index} sender={sender} text={message.text} />
@@ -86,7 +86,7 @@ export default function Bot() {
           <form>
             <Input value={question} onChange={onChange} onSubmit={onSubmit} isLoading={isLoading} />
           </form>
-        </div> */}
+        </div>
       </main>
     </Suspense>
   )
