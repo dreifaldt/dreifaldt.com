@@ -35,7 +35,7 @@ export const Input: FC<InputProps> = ({ value, isLoading, onChange, name }) => {
           if (e.key === 'Escape') onChange({ target: { value: '' } } as ChangeEvent<HTMLInputElement>)
         }}
       />
-      {/* <IconButton onClick={onSubmit} disabled={isLoading || !value} /> */}
+      <IconButton disabled={isLoading || !value} />
     </div>
   )
 }
