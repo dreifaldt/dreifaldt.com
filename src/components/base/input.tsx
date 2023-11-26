@@ -12,10 +12,9 @@ interface InputProps {
 
 export const Input: FC<InputProps> = ({ value, isLoading, onChange, onSubmit }) => {
   return (
-    <form
-      onSubmit={onSubmit}
+    <div
       className={
-        'flex rounded-xl border-2 border-gray-300 items-center py-2 px-4 mx-4 my-4 shadow-inner shadow-slate-200 mt-auto'
+        'flex rounded-xl border-2 border-gray-300 items-center py-2 px-4 mx-4 my-4 shadow-inner shadow-slate-200 mt-auto max-w-lg'
       }
     >
       {isLoading && (
@@ -29,13 +28,13 @@ export const Input: FC<InputProps> = ({ value, isLoading, onChange, onSubmit }) 
         placeholder="Skriv ditt meddelande..."
         value={value}
         onChange={onChange}
-        className="w-full px-3 py-2 focus:outline-none bg-transparent"
+        className="w-full px-3 py-2 focus:outline-none bg-transparent text-slate-600"
         onKeyDown={(e) => {
           if (e.key === 'Enter') onSubmit(e)
           if (e.key === 'Escape') onChange({ target: { value: '' } } as ChangeEvent<HTMLInputElement>)
         }}
       />
       <IconButton onClick={onSubmit} disabled={isLoading || !value} />
-    </form>
+    </div>
   )
 }

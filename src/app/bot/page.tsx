@@ -67,14 +67,15 @@ export default function Bot() {
   return (
     <Suspense fallback={<Loading />}>
       <main>
-        <div className="flex flex-col justify-end h-screen bg-yellow-50 w-full">
+        <div className="flex flex-col justify-end h-screen bg-gray-100 w-full">
           {conversation.map((message, index) => {
             const sender = message.role === 'assistant' ? 'Snygg-Per' : 'User'
-
             return <Message key={index} sender={sender} text={message.text} />
           })}
 
-          <Input value={question} onChange={onChange} onSubmit={onSubmit} isLoading={isLoading} />
+          <form>
+            <Input value={question} onChange={onChange} onSubmit={onSubmit} isLoading={isLoading} />
+          </form>
         </div>
       </main>
     </Suspense>

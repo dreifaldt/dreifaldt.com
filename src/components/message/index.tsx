@@ -13,7 +13,7 @@ export const Message: FC<MessageProps> = ({ text, sender }) => {
   return (
     <div className={`flex flex-col gap-4 py-4 px-4`}>
       <p className="font-bold text-sm text-gray-700">{sender}</p>
-      <p>{text}</p>
+      <p className="text-blue-950">{text}</p>
 
       {links.map((link, index) => (
         <a
