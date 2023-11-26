@@ -83,9 +83,7 @@ export default function Bot() {
             return <Message key={index} sender={sender} text={message.text} />
           })}
 
-          <form>
-            <Input value={question} onChange={onChange} onSubmit={onSubmit} isLoading={isLoading} />
-          </form>
+          <Input value={question} onChange={onChange} onSubmit={onSubmit} isLoading={isLoading} />
         </div>
       </main>
     </Suspense>

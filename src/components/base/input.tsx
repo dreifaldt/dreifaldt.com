@@ -1,5 +1,3 @@
-'use client'
-
 import { ChangeEvent, FC, FormEvent } from 'react'
 import { IconButton } from './button'
 
@@ -23,6 +21,7 @@ export const Input: FC<InputProps> = ({ value, isLoading, onChange, onSubmit }) 
         </div>
       )}
       <input
+        id="quest"
         disabled={isLoading}
         type="text"
         placeholder="Skriv ditt meddelande..."
