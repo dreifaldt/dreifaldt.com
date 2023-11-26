@@ -24,6 +24,9 @@ export const Form: FC = () => {
 
   const action = async (data: FormData) => {
     try {
+      if (isLoading) {
+        alert('Vänta lite, vi laddar!')
+      }
       setLoading(true)
       // optimisticly add question to conversation
       setConversation((prev) => [...prev, { role: 'user', text: question }])
