@@ -1,37 +1,39 @@
 'use server'
 
 import { api } from '@/api/apiClient'
-import { isMessageContentText } from '@/utils/assistant/types'
-import { ThreadMessagesPage } from 'openai/resources/beta/threads/messages/messages.mjs'
 import { Run } from 'openai/resources/beta/threads/runs/runs.mjs'
 import { Thread } from 'openai/resources/beta/threads/threads.mjs'
 
-const pollingRunStatus = async (thread: Thread, run: Run) => {
-  const response = await api.checkRunStatus(thread, run)
+export async function sendRunAndGetMessage(question: string, thread: Thread) {
+  'use server'
 
-  if (response.status === 'completed') {
-    const response: ThreadMessagesPage = await api.getResponse(thread)
+  async function pollingRunStatus(thread: Thread, run: Run) {
+    const response = await api.checkRunStatus(thread, run)
 
-    const parsedConversation = response.data
-      .map((message) => {
-        const text = isMessageContentText(message.content[0]) ? message.content[0].text.value : ''
-        return { role: message.role, text }
-      })
-      .reverse()
+    if (response.status === 'completed') {
+      const response = await api.getResponse(thread)
 
-    return parsedConversation
-  } else if (response.status === 'requires_action') {
-    alert('requires action')
-  } else if (response.status === 'in_progress') {
-    pollingRunStatus(thread, run)
-  } else if (response.status === 'queued') {
-    pollingRunStatus(thread, run)
+      return response
+    } else if (response.status === 'requires_action') {
+    } else if (response.status === 'in_progress') {
+      pollingRunStatus(thread, run)
+    } else if (response.status === 'queued') {
+      pollingRunStatus(thread, run)
+    } else {
+      return
+    }
   }
-}
 
-export async function action(question: string, thread: Thread) {
   await api.addMessageToThread(thread, question)
 
   const run = await api.runAssistant(thread)
-  return await pollingRunStatus(thread, run)
+  const reponse = await pollingRunStatus(thread, run)
+
+  return reponse
+}
+
+export async function createThread() {
+  'use server'
+
+  return await api.createThread()
 }

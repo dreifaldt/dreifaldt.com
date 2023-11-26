@@ -10,7 +10,12 @@ const openai = new OpenAi({
   organization: 'org-ZR444RVRXOTctJDoUIJtw0vW',
 })
 
-const createThread = (): Promise<Thread> => openai.beta.threads.create()
+const createThread = async (): Promise<Thread> => {
+  const thread = await openai.beta.threads.create()
+  console.log({ thread })
+
+  return thread
+}
 
 const addMessageToThread = (thread: Thread, content: string): Promise<ThreadMessage> =>
   openai.beta.threads.messages.create(thread.id, {
@@ -18,13 +23,25 @@ const addMessageToThread = (thread: Thread, content: string): Promise<ThreadMess
     role: 'user',
   })
 
-const runAssistant = (thread: Thread): Promise<Run> =>
-  openai.beta.threads.runs.create(thread.id, {
+const runAssistant = async (thread: Thread): Promise<Run> => {
+  const run = await openai.beta.threads.runs.create(thread.id, {
     assistant_id: 'asst_X6WJHOogJWl9IQxR4ZxxnzdB',
   })
 
-const checkRunStatus = (thread: Thread, run: Run): Promise<Run> => openai.beta.threads.runs.retrieve(thread.id, run.id)
+  return run
+}
 
-const getResponse = (thread: Thread) => openai.beta.threads.messages.list(thread.id)
+const checkRunStatus = async (thread: Thread, run: Run): Promise<Run> => {
+  const runStatus = openai.beta.threads.runs.retrieve(thread.id, run.id)
+
+  return runStatus
+}
+
+const getResponse = async (thread: Thread) => {
+  const list = await openai.beta.threads.messages.list(thread.id)
+  console.log({ list })
+
+  return list.data
+}
 
 export const openAi = { addMessageToThread, checkRunStatus, createThread, getResponse, runAssistant }
