@@ -7,7 +7,7 @@ interface MessageProps {
 }
 
 export const Message: FC<MessageProps> = ({ text, sender }) => {
-  const links = getHttpsLinks(text.slice(0, -1)) || []
+  const links = getHttpsLinks(text.split(')')[0]) || []
 
   return (
     <div className={`flex flex-col gap-4 py-4 px-4`}>
