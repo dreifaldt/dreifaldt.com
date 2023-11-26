@@ -8,13 +8,13 @@ import { createThread, sendRunAndGetMessage } from './action'
 import { isMessageContentText } from '@/utils/assistant/types'
 
 export const Form: FC = () => {
-  const [thread, setThread] = useState<Thread | undefined>(undefined)
+  const [storedThread, setThread] = useState<Thread | undefined>(undefined)
 
-  useMixpanel(thread)
+  useMixpanel(storedThread)
 
   const [conversation, setConversation] = useState<{ role: ThreadMessage['role']; text: string }[]>([])
 
-  const [question, setQuestion] = useState('')
+  const [storedQuestion, setQuestion] = useState('')
   const [isLoading, setLoading] = useState(false)
   const formRef = useRef<HTMLFormElement | null>(null)
 
@@ -27,24 +27,27 @@ export const Form: FC = () => {
       setLoading(true)
       // optimisticly add question to conversation
       setConversation((prev) => [...prev, { role: 'user', text: question }])
+      // reset question
+      setQuestion('')
 
-      let threadData = thread
-      if (!threadData) {
+      let thread = storedThread
+      if (!thread) {
         // maybe create thread
-        threadData = await createThread()
-        setThread(threadData)
+        thread = await createThread()
+        setThread(thread)
       }
       const question = data.get('question') as string
-      console.log({ question })
-      console.log({ threadData })
 
-      if (!question || !threadData) return
+      if (!question || !thread) return
 
-      const response = await sendRunAndGetMessage(question, threadData)
+      console.log('sending question')
+
+      const response = await sendRunAndGetMessage(question, thread)
+
       if (!response) return
 
       const parsedConversation = response
-        .map((message) => {
+        .map((message: ThreadMessage) => {
           const text = isMessageContentText(message.content[0]) ? message.content[0].text.value : ''
           return { role: message.role, text }
         })
@@ -56,7 +59,6 @@ export const Form: FC = () => {
       console.log({ error })
     } finally {
       setLoading(false)
-      setQuestion('')
     }
   }
 
@@ -68,7 +70,7 @@ export const Form: FC = () => {
       })}
 
       <form action={action} ref={formRef}>
-        <Input value={question} onChange={onChange} name={'question'} isLoading={isLoading} />
+        <Input value={storedQuestion} onChange={onChange} name={'question'} isLoading={isLoading} />
       </form>
     </div>
   )

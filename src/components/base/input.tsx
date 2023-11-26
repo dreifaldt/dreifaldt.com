@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, FormEvent } from 'react'
+import { ChangeEvent, FC, FormEvent, MutableRefObject } from 'react'
 import { IconButton } from './button'
 
 interface InputProps {
@@ -6,7 +6,6 @@ interface InputProps {
   isLoading?: boolean
   onChange: (event: ChangeEvent<HTMLInputElement>) => void
   name: string
-  onSubmit?: (event: FormEvent<HTMLButtonElement | HTMLInputElement | HTMLFormElement>) => void
 }
 
 export const Input: FC<InputProps> = ({ value, isLoading, onChange, name }) => {
@@ -17,7 +16,7 @@ export const Input: FC<InputProps> = ({ value, isLoading, onChange, name }) => {
       }
     >
       {isLoading && (
-        <div className="flexbox">
+        <div className="flexbox animate-spin">
           <div className="triple-spinner" />
         </div>
       )}
@@ -31,7 +30,6 @@ export const Input: FC<InputProps> = ({ value, isLoading, onChange, name }) => {
         onChange={onChange}
         className="w-full px-3 py-2 focus:outline-none bg-transparent text-slate-600"
         onKeyDown={(e) => {
-          // if (e.key === 'Enter') onSubmit(e)
           if (e.key === 'Escape') onChange({ target: { value: '' } } as ChangeEvent<HTMLInputElement>)
         }}
       />
