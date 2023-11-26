@@ -1,20 +1,14 @@
 'use client'
 import { ThreadMessage } from 'openai/resources/beta/threads/messages/messages.mjs'
 import { Thread } from 'openai/resources/beta/threads/threads.mjs'
-import { ChangeEvent, FC, useRef, useState } from 'react'
+import { ChangeEvent, FC, useEffect, useRef, useState } from 'react'
 import { Input, Message } from '..'
-import { getConversation } from './action'
 import { useMixpanel } from '@/hooks/useMixpanel'
+import { api } from '@/api/apiClient'
+import { action } from './action'
 
 export const Form: FC = () => {
-  // const { data: thread, error } = queries.useGetThread()
-
-  const thread: Thread = {
-    created_at: 1337,
-    id: 'DUMMY_TEST_THREAD',
-    metadata: null,
-    object: 'thread',
-  }
+  const [thread, setThread] = useState<Thread | undefined>(undefined)
 
   useMixpanel(thread)
 
@@ -28,15 +22,14 @@ export const Form: FC = () => {
     setQuestion(event.target.value)
   }
 
-  const action = async (data: FormData) => {
-    if (!thread) return
-    setConversation((prevValue) => [...prevValue, { role: 'user', text: question }])
-    formRef.current && formRef.current.reset()
-    setQuestion('')
+  useEffect(() => {
+    const fetchThread = async () => {
+      const thread = await api.createThread()
+      setThread(thread)
+    }
 
-    const result = await getConversation(data, thread)
-    result && setConversation(result)
-  }
+    fetchThread()
+  }, [])
 
   return (
     <div className="flex flex-col justify-end h-screen bg-gray-100 w-full">

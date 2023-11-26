@@ -1,4 +1,5 @@
 'use server'
+
 import { api } from '@/api/apiClient'
 import { isMessageContentText } from '@/utils/assistant/types'
 import { ThreadMessagesPage } from 'openai/resources/beta/threads/messages/messages.mjs'
@@ -28,15 +29,9 @@ const pollingRunStatus = async (thread: Thread, run: Run) => {
   }
 }
 
-export async function getConversation(formData: FormData, thread: Thread) {
-  const question = formData.get('question') as string
+export async function action(question: string, thread: Thread) {
+  await api.addMessageToThread(thread, question)
 
-  try {
-    question && (await api.addMessageToThread(thread, question))
-
-    const run = await api.runAssistant(thread)
-    return await pollingRunStatus(thread, run)
-  } catch (error) {
-    console.log(error)
-  }
+  const run = await api.runAssistant(thread)
+  return await pollingRunStatus(thread, run)
 }
