@@ -21,6 +21,10 @@ export async function sendRunAndGetMessage(question: string, thread: Thread) {
       return await pollingRunStatus(thread, run)
     } else if (response.status === 'queued') {
       return await pollingRunStatus(thread, run)
+    } else if (response.status === 'failed' || response.status === 'cancelled') {
+      return [
+        { content: [{ text: { value: 'Failed/Cancelled message fetch' } }], role: 'assistant' },
+      ] as ThreadMessage[]
     } else {
       return [{ content: [{ text: { value: 'Should never happen' } }], role: 'assistant' }] as ThreadMessage[]
     }
