@@ -6,9 +6,6 @@ import { Input, Message } from '..'
 import { useMixpanel } from '@/hooks/useMixpanel'
 import { actionAddMessage, actionSubmitRunTools, actionCreateThread, actionPollingRunStatus } from './action'
 import { isMessageContentText } from '@/utils/assistant/types'
-import { log } from 'console'
-import { api } from '@/api/apiClient'
-import { Run } from 'openai/resources/beta/threads/index.mjs'
 
 export const Form: FC = () => {
   const [thread, setThread] = useState<Thread | undefined>(undefined)
@@ -26,12 +23,13 @@ export const Form: FC = () => {
     if (parsedHistory.conversation && parsedHistory.thread) {
       setConversation(parsedHistory.conversation)
       setThread(parsedHistory.thread)
+      setName(parsedHistory.name)
     }
   }, [])
 
   useEffect(() => {
-    localStorage.setItem('history', JSON.stringify({ conversation, thread }))
-  }, [conversation, thread])
+    localStorage.setItem('history', JSON.stringify({ conversation, name, thread }))
+  }, [conversation, thread, name])
 
   const [storedQuestion, setQuestion] = useState('')
   const [isLoading, setLoading] = useState(false)
@@ -80,17 +78,21 @@ export const Form: FC = () => {
         // set conversation from gpt
         setConversation(parsedConversation)
       } else if (response.required_action?.type === 'submit_tool_outputs') {
-        const toolCall = response.required_action.submit_tool_outputs.tool_calls.find(
+        const nameToolCall = response.required_action.submit_tool_outputs.tool_calls.find(
           (tool) => tool.function.name === 'handle_user_name'
         )
-        if (toolCall) {
-          console.log({ name: JSON.parse(toolCall.function.arguments)?.name || 'User' })
-          setName(JSON.parse(toolCall.function.arguments)?.name || 'User')
-          await actionSubmitRunTools(usedThread, response, [
-            { output: 'User name set in local storage', tool_call_id: toolCall.id },
-          ])
-          await actionPollingRunStatus(usedThread, response)
+
+        const toolCalls = response.required_action.submit_tool_outputs.tool_calls.map((toolCall) => ({
+          output: 'done',
+          tool_call_id: toolCall.id,
+        }))
+
+        if (nameToolCall) {
+          setName(JSON.parse(nameToolCall.function.arguments)?.name || 'User')
         }
+
+        await actionSubmitRunTools(usedThread, response, toolCalls)
+        await actionPollingRunStatus(usedThread, response)
       }
     } catch (error) {
       console.log({ error })
