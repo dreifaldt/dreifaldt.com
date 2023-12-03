@@ -2,7 +2,7 @@ import OpenAi from 'openai'
 import { OPENAI_TOKEN } from '@/utils/env'
 import { Thread } from 'openai/resources/beta/threads/threads'
 import { ThreadMessage } from 'openai/resources/beta/threads/messages/messages'
-import { Run } from 'openai/resources/beta/threads/runs/runs'
+import { Run, RunSubmitToolOutputsParams } from 'openai/resources/beta/threads/runs/runs'
 
 const openai = new OpenAi({
   apiKey: OPENAI_TOKEN,
@@ -30,7 +30,7 @@ const runAssistant = async (thread: Thread): Promise<Run> => {
   return run
 }
 
-const checkRunStatus = async (thread: Thread, run: Run): Promise<Run> => {
+const getRunStatus = async (thread: Thread, run: Run): Promise<Run> => {
   const runStatus = openai.beta.threads.runs.retrieve(thread.id, run.id)
 
   return runStatus
@@ -42,4 +42,14 @@ const getResponse = async (thread: Thread) => {
   return list.data
 }
 
-export const openAi = { addMessageToThread, checkRunStatus, createThread, getResponse, runAssistant }
+const submitToolOutputs = async (
+  threadId: Thread['id'],
+  runId: Run['id'],
+  toolOutputs: RunSubmitToolOutputsParams.ToolOutput[]
+) => {
+  return await openai.beta.threads.runs.submitToolOutputs(threadId, runId, {
+    tool_outputs: toolOutputs,
+  })
+}
+
+export const openAi = { addMessageToThread, createThread, getResponse, getRunStatus, runAssistant, submitToolOutputs }

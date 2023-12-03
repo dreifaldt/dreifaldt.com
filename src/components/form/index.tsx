@@ -4,14 +4,18 @@ import { Thread } from 'openai/resources/beta/threads/threads.mjs'
 import { ChangeEvent, FC, useEffect, useRef, useState } from 'react'
 import { Input, Message } from '..'
 import { useMixpanel } from '@/hooks/useMixpanel'
-import { createThread, sendRunAndGetMessage } from './action'
+import { actionAddMessage, actionSubmitRunTools, actionCreateThread, actionPollingRunStatus } from './action'
 import { isMessageContentText } from '@/utils/assistant/types'
+import { log } from 'console'
+import { api } from '@/api/apiClient'
+import { Run } from 'openai/resources/beta/threads/index.mjs'
 
 export const Form: FC = () => {
   const [thread, setThread] = useState<Thread | undefined>(undefined)
 
   useMixpanel(thread)
   const [conversation, setConversation] = useState<{ role: ThreadMessage['role']; text: string }[]>([])
+  const [name, setName] = useState('User')
 
   useEffect(() => {
     const savedHistory = localStorage.getItem('history')
@@ -51,29 +55,43 @@ export const Form: FC = () => {
       let usedThread = thread
       if (!usedThread) {
         // maybe create thread
-        usedThread = await createThread()
+        usedThread = await actionCreateThread()
         setThread(usedThread)
       }
       const question = data.get('question') as string
 
-      if (!question || !thread) return
+      if (!question) return
 
-      const response = await sendRunAndGetMessage(question, usedThread)
+      const response = await actionAddMessage(question, usedThread)
 
       if (!response) {
         alert(JSON.stringify(response))
         return
       }
 
-      const parsedConversation = response
-        .map((message: ThreadMessage) => {
-          const text = isMessageContentText(message.content[0]) ? message.content[0].text.value : 'Missing text value'
-          return { role: message.role, text }
-        })
-        .reverse()
+      if (Array.isArray(response)) {
+        const parsedConversation = response
+          .map((message: ThreadMessage) => {
+            const text = isMessageContentText(message.content[0]) ? message.content[0].text.value : 'Missing text value'
+            return { role: message.role, text }
+          })
+          .reverse()
 
-      // set conversation from gpt
-      setConversation(parsedConversation)
+        // set conversation from gpt
+        setConversation(parsedConversation)
+      } else if (response.required_action?.type === 'submit_tool_outputs') {
+        const toolCall = response.required_action.submit_tool_outputs.tool_calls.find(
+          (tool) => tool.function.name === 'handle_user_name'
+        )
+        if (toolCall) {
+          console.log({ name: JSON.parse(toolCall.function.arguments)?.name || 'User' })
+          setName(JSON.parse(toolCall.function.arguments)?.name || 'User')
+          await actionSubmitRunTools(usedThread, response, [
+            { output: 'User name set in local storage', tool_call_id: toolCall.id },
+          ])
+          await actionPollingRunStatus(usedThread, response)
+        }
+      }
     } catch (error) {
       console.log({ error })
     } finally {
@@ -84,7 +102,7 @@ export const Form: FC = () => {
   return (
     <div className="flex flex-col bg-gray-100 w-ful min-h-screen">
       {conversation.map((message, index) => {
-        const sender = message.role === 'assistant' ? 'Snygg-Per' : 'User'
+        const sender = message.role === 'assistant' ? 'Snygg-Per' : name
         return <Message key={index} sender={sender} text={message.text} />
       })}
 
