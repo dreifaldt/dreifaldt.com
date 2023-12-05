@@ -6,6 +6,7 @@ import { Input, Message } from '..'
 import { trackError, trackMessage, useMixpanel } from '@/hooks/useMixpanel'
 import { actionAddMessage, actionSubmitRunTools, actionCreateThread, actionPollingRunStatus } from './action'
 import { isMessageContentText } from '@/utils/assistant/types'
+import { removeBrackets } from '@/utils/text'
 
 export const Form: FC = () => {
   const [thread, setThread] = useState<Thread | undefined>(undefined)
@@ -72,7 +73,10 @@ export const Form: FC = () => {
       if (Array.isArray(response)) {
         const parsedConversation = response
           .map((message: ThreadMessage) => {
-            const text = isMessageContentText(message.content[0]) ? message.content[0].text.value : 'Missing text value'
+            const text = isMessageContentText(message.content[0])
+              ? removeBrackets(message.content[0].text.value)
+              : 'Missing text value'
+
             return { role: message.role, text }
           })
           .reverse()
