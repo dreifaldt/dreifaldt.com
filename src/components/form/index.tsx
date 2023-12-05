@@ -3,7 +3,7 @@ import { ThreadMessage } from 'openai/resources/beta/threads/messages/messages.m
 import { Thread } from 'openai/resources/beta/threads/threads.mjs'
 import { ChangeEvent, FC, useEffect, useRef, useState } from 'react'
 import { Input, Message } from '..'
-import { useMixpanel } from '@/hooks/useMixpanel'
+import { trackError, trackMessage, useMixpanel } from '@/hooks/useMixpanel'
 import { actionAddMessage, actionSubmitRunTools, actionCreateThread, actionPollingRunStatus } from './action'
 import { isMessageContentText } from '@/utils/assistant/types'
 
@@ -75,6 +75,9 @@ export const Form: FC = () => {
           })
           .reverse()
 
+        // log last received message
+        trackMessage(parsedConversation[parsedConversation.length - 1].text)
+
         // set conversation from gpt
         setConversation(parsedConversation)
       } else if (response.required_action?.type === 'submit_tool_outputs') {
@@ -96,6 +99,7 @@ export const Form: FC = () => {
       }
     } catch (error) {
       console.log({ error })
+      trackError(error)
     } finally {
       setLoading(false)
     }

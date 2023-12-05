@@ -22,3 +22,11 @@ export const useMixpanel = (thread?: Thread) => {
     mixpanel.track('THREAD_CREATED', thread)
   }, [thread])
 }
+
+export const trackMessage = (message: string) => {
+  mixpanel.track(message)
+}
+
+export const trackError = (error: unknown) => {
+  mixpanel.track('ERROR', { error })
+}
