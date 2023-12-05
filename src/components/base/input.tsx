@@ -34,6 +34,7 @@ export const Input: FC<InputProps> = ({ value, onChange, name }) => {
           if (e.key === 'Escape') onChange({ target: { value: '' } } as ChangeEvent<HTMLInputElement>)
         }}
         data-1p-ignore
+        autoComplete="off"
       />
       <IconButton disabled={pending || !value} />
     </div>
