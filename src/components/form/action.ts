@@ -1,7 +1,6 @@
 'use server'
 
 import { api } from '@/api/apiClient'
-import { log } from 'console'
 import { ThreadMessage } from 'openai/resources/beta/threads/index.mjs'
 import { Run, RunSubmitToolOutputsParams } from 'openai/resources/beta/threads/runs/runs.mjs'
 import { Thread } from 'openai/resources/beta/threads/threads.mjs'

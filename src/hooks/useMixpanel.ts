@@ -24,7 +24,7 @@ export const useMixpanel = (thread?: Thread) => {
 }
 
 export const trackMessage = (message: string) => {
-  mixpanel.track(message)
+  mixpanel.track('MESSAGE', { message })
 }
 
 export const trackError = (error: unknown) => {

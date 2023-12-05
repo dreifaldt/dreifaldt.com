@@ -47,6 +47,8 @@ export const Form: FC = () => {
       setLoading(true)
       // optimisticly add question to conversation
       setConversation((prev) => [...prev, { role: 'user', text: question }])
+      // track question
+      trackMessage(data.get('question') as string)
       // reset question
       setQuestion('')
 
