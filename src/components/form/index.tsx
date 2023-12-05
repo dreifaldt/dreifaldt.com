@@ -45,6 +45,7 @@ export const Form: FC = () => {
       if (isLoading) {
         alert('Vänta lite, vi laddar!')
       }
+
       setLoading(true)
       // optimisticly add question to conversation
       setConversation((prev) => [...prev, { role: 'user', text: question }])
