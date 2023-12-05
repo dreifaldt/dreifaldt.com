@@ -114,7 +114,7 @@ export const Form: FC = () => {
   return (
     <div className="flex flex-col bg-gray-100 w-ful min-h-screen">
       {conversation.map((message, index) => {
-        const sender = message.role === 'assistant' ? 'Snygg-Per' : name
+        const sender = message.role === 'assistant' ? 'Kite-surfarens Guide' : name
         return <Message key={index} sender={sender} text={message.text} />
       })}
 
