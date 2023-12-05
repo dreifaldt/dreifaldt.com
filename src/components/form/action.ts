@@ -61,6 +61,7 @@ export async function actionPollingRunStatus(thread: Thread, run: Run): Promise<
   } else {
     console.log('Last else:')
     console.log(runResponse)
+
     return [{ content: [{ text: { value: 'Should never happen' } }], role: 'assistant' }] as ThreadMessage[]
   }
 }
