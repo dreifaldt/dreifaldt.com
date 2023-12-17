@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "mixpanel-browser": "^2.48.1",
-    "next": "^14.0.3",
+    "next": "^14.0.4",
     "openai": "^4.23.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
