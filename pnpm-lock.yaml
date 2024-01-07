@@ -26,8 +26,8 @@ dependencies:
 
 devDependencies:
   '@types/mixpanel-browser':
-    specifier: ^2.48.0
-    version: 2.48.0
+    specifier: ^2.48.1
+    version: 2.48.1
   '@types/node':
     specifier: ^20
     version: 20.10.6
@@ -326,8 +326,8 @@ packages:
       '@types/unist': 3.0.2
     dev: false
 
-  /@types/mixpanel-browser@2.48.0:
-    resolution: {integrity: sha512-3SO/SKqVrkn8ipXHUc9ew3ZFyvIKYsIxbwhyzwqlcHdro1UC9inSwr2Cgq519bYljC/1tZA4ALZJJPQNOnhPbw==}
+  /@types/mixpanel-browser@2.48.1:
+    resolution: {integrity: sha512-qcckCw9znV98KUkvImglkiVd303Fnn1NTpbKkboQS0bB1SbkNc0Qzz6M9AsS6MaKSzINN4e5z28qUBsK9Wzm5g==}
     dev: true
 
   /@types/ms@0.7.34:
