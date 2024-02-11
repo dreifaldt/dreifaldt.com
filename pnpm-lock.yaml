@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   mixpanel-browser:
-    specifier: ^2.48.1
-    version: 2.48.1
+    specifier: ^2.49.0
+    version: 2.49.0
   next:
     specifier: ^14.1.0
     version: 14.1.0(react-dom@18.2.0)(react@18.2.0)
@@ -26,8 +26,8 @@ dependencies:
 
 devDependencies:
   '@types/mixpanel-browser':
-    specifier: ^2.48.1
-    version: 2.48.1
+    specifier: ^2.49.0
+    version: 2.49.0
   '@types/node':
     specifier: ^20
     version: 20.11.16
@@ -345,8 +345,8 @@ packages:
       '@types/unist': 3.0.2
     dev: false
 
-  /@types/mixpanel-browser@2.48.1:
-    resolution: {integrity: sha512-qcckCw9znV98KUkvImglkiVd303Fnn1NTpbKkboQS0bB1SbkNc0Qzz6M9AsS6MaKSzINN4e5z28qUBsK9Wzm5g==}
+  /@types/mixpanel-browser@2.49.0:
+    resolution: {integrity: sha512-StmgUnS58d44DmIAEX9Kk8qwisAYCl6E2qulIjYyHXUPuJCPOuyUMTTKBp+aU2F2do+kxAzCxiBtsB4fnBT9Fg==}
     dev: true
 
   /@types/ms@0.7.34:
@@ -2516,8 +2516,8 @@ packages:
     engines: {node: '>=16 || 14 >=14.17'}
     dev: true
 
-  /mixpanel-browser@2.48.1:
-    resolution: {integrity: sha512-vXTuUzZMg+ht7sRqyjtc3dUDy/81Z/H6FLFgFkUZJqKFaAqcx1JSXmOdY/2kmsxCkUdy5JN5zW9m9TMCk+rxGQ==}
+  /mixpanel-browser@2.49.0:
+    resolution: {integrity: sha512-RZJCO7XXuuHBAWG5fd9Mavz994M7v7W3Qiaq8NzmN631pa4BQ0vNZQtRFqKcCCOBn4xqOZbX2GkuC7ZkQoL4cQ==}
     dev: false
 
   /ms@2.1.2:
