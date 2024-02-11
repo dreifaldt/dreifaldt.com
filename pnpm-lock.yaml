@@ -30,7 +30,7 @@ devDependencies:
     version: 2.48.1
   '@types/node':
     specifier: ^20
-    version: 20.11.16
+    version: 20.11.17
   '@types/react':
     specifier: ^18.2.52
     version: 18.2.52
@@ -356,7 +356,7 @@ packages:
   /@types/node-fetch@2.6.9:
     resolution: {integrity: sha512-bQVlnMLFJ2d35DkPNjEPmd9ueO/rh5EiaZt2bhqiSarPjZIuIV6bPQVqcrEyvNo+AfTrRGVazle1tl597w3gfA==}
     dependencies:
-      '@types/node': 20.11.16
+      '@types/node': 20.11.17
       form-data: 4.0.0
     dev: false
 
@@ -366,8 +366,8 @@ packages:
       undici-types: 5.26.5
     dev: false
 
-  /@types/node@20.11.16:
-    resolution: {integrity: sha512-gKb0enTmRCzXSSUJDq6/sPcqrfCv2mkkG6Jt/clpn5eiCbKTY+SgZUxo+p8ZKMof5dCp9vHQUAB7wOUTod22wQ==}
+  /@types/node@20.11.17:
+    resolution: {integrity: sha512-QmgQZGWu1Yw9TDyAP9ZzpFJKynYNeOvwMJmaxABfieQoVoiVOS6MN1WSpqpRcbeA5+RW82kraAVxCCJg+780Qw==}
     dependencies:
       undici-types: 5.26.5
 
