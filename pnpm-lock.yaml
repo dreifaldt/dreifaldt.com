@@ -28,8 +28,8 @@ importers:
         version: 9.0.1(@types/react@18.3.3)(react@18.3.1)
     devDependencies:
       '@types/mixpanel-browser':
-        specifier: ^2.49.0
-        version: 2.49.0
+        specifier: ^2.49.1
+        version: 2.49.1
       '@types/node':
         specifier: ^20
         version: 20.14.10
@@ -243,8 +243,8 @@ packages:
   '@types/mdast@4.0.3':
     resolution: {integrity: sha512-LsjtqsyF+d2/yFOYaN22dHZI1Cpwkrj+g06G8+qtUKlhovPW89YhqSnfKtMbkgmEtYpH2gydRNULd6y8mciAFg==}
 
-  '@types/mixpanel-browser@2.49.0':
-    resolution: {integrity: sha512-StmgUnS58d44DmIAEX9Kk8qwisAYCl6E2qulIjYyHXUPuJCPOuyUMTTKBp+aU2F2do+kxAzCxiBtsB4fnBT9Fg==}
+  '@types/mixpanel-browser@2.49.1':
+    resolution: {integrity: sha512-W9VZxD7haNMenkRwXxPZBJLhED7Sx1l89nZsGcWi3WzdIk417k/KnpmfDFn2sEyL31G/h0rY1E6erAny+8ItOw==}
 
   '@types/ms@0.7.34':
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
@@ -2053,7 +2053,7 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.2
 
-  '@types/mixpanel-browser@2.49.0': {}
+  '@types/mixpanel-browser@2.49.1': {}
 
   '@types/ms@0.7.34': {}
 
