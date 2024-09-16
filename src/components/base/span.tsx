@@ -1,7 +1,5 @@
 import { FC, PropsWithChildren } from 'react'
 
-type SpanProps = { span: number }
-
-export const Span: FC<PropsWithChildren<SpanProps>> = ({ span = 1, children }) => {
-  return <span className={`col-span-${span}`}>{children}</span>
+export const Span: FC<PropsWithChildren> = ({ children }) => {
+  return <span className="col-span-6">{children}</span>
 }
