@@ -1,6 +1,6 @@
-import { ChangeEvent, FC, FormEvent, MutableRefObject } from 'react'
-import { IconButton } from './button'
+import { ChangeEvent, FC } from 'react'
 import { useFormStatus } from 'react-dom'
+import { IconButton } from './button'
 
 interface InputProps {
   value: string
