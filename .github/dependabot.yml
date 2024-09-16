@@ -8,3 +8,5 @@ updates:
     ignore:
       # Managed by NextJS:
       - dependency-name: 'typescript'
+      - dependency-name: 'node'
+      - dependency-name: 'react'
