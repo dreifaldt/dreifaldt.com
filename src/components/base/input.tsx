@@ -1,3 +1,4 @@
+'use client'
 import { ChangeEvent, FC } from 'react'
 import { useFormStatus } from 'react-dom'
 import { IconButton } from './button'

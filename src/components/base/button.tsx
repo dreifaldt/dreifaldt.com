@@ -1,4 +1,4 @@
-import { FC, FormEvent } from 'react'
+import { FC } from 'react'
 import { Arrow } from '../icon/arrow'
 
 interface IconButtonProps {
