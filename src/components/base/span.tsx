@@ -1,5 +1,9 @@
 import { FC, PropsWithChildren } from 'react'
 
-export const Span: FC<PropsWithChildren> = ({ children }) => {
-  return <span className="col-span-6">{children}</span>
+interface Props extends PropsWithChildren {
+  className?: string
+}
+
+export const Span: FC<Props> = ({ className, children }) => {
+  return <span className={`col-span-6 ${className}`}>{children}</span>
 }

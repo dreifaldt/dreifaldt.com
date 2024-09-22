@@ -1,17 +1,21 @@
 'use client'
 import { Span } from '@/components'
 import { Grid } from '@/components/base/grid'
+import { createDeletionRequest } from '@/utils/template'
 import { useState } from 'react'
 
 export default function Integrity() {
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [address, setAddress] = useState('')
+  const [email, setEmail] = useState('')
+  const [ssn, setSSN] = useState('')
+  const [preview, setPreview] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // Handle form submission logic here
-    console.log('Full Name:', fullName)
-    console.log('Address:', address)
+    setPreview(true)
   }
 
   return (
@@ -27,15 +31,32 @@ export default function Integrity() {
       <Span>
         <form onSubmit={handleSubmit} className="w-auto h-auto bg-slate-600 p-4 m-4 rounded-lg">
           <div className="mb-4">
-            <label htmlFor="fullName" className="block text-white">
-              Full Name
+            <label htmlFor="firstName" className="block text-white">
+              First Name
             </label>
             <input
+              autoComplete="given-name"
               type="text"
-              id="fullName"
-              value={fullName}
-              placeholder="Enter your full name"
-              onChange={(e) => setFullName(e.target.value)}
+              id="firstName"
+              value={firstName}
+              placeholder="Enter your first name"
+              onChange={(e) => setFirstName(e.target.value)}
+              className="w-full p-2 text-black placeholder:text-grey-700"
+              required
+              data-1p-ignore
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="lastName" className="block text-white">
+              Last Name
+            </label>
+            <input
+              autoComplete="family-name"
+              type="text"
+              id="lastName"
+              value={lastName}
+              placeholder="Enter your last name"
+              onChange={(e) => setLastName(e.target.value)}
               className="w-full p-2 text-black placeholder:text-grey-700"
               required
               data-1p-ignore
@@ -46,6 +67,7 @@ export default function Integrity() {
               Address
             </label>
             <input
+              autoComplete="address"
               type="text"
               id="address"
               value={address}
@@ -56,10 +78,47 @@ export default function Integrity() {
               data-1p-ignore
             />
           </div>
-          <button type="submit" className="bg-blue-500 text-white p-2">
-            Submit
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-white">
+              Email
+            </label>
+            <input
+              autoComplete="email"
+              type="email"
+              id="Mail"
+              value={email}
+              placeholder="Enter your email"
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-2 text-black placeholder:text-grey-700"
+              required
+              data-1p-ignore
+            />
+          </div>
+          <div className="Personnummer">
+            <label htmlFor="ssn" className="block text-white">
+              Personnummer
+            </label>
+            <input
+              autoComplete="ssn"
+              type="ssn"
+              id="ssn"
+              value={ssn}
+              placeholder="Enter your SSN"
+              onChange={(e) => setSSN(e.target.value)}
+              className="w-full p-2 text-black placeholder:text-grey-700"
+              required
+              data-1p-ignore
+            />
+          </div>
+          <button type="submit" className="bg-blue-500 text-white p-2 mt-4">
+            Preview
           </button>
         </form>
+      </Span>
+      <Span className="m-4">
+        {preview && email && firstName && address && lastName && email && (
+          <p>{createDeletionRequest({ email, firstName, lastName, ssn })}</p>
+        )}
       </Span>
     </Grid>
   )
