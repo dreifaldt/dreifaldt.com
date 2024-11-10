@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       mixpanel-browser:
-        specifier: ^2.55.1
-        version: 2.55.1
+        specifier: ^2.56.0
+        version: 2.56.0
       next:
         specifier: ^14.2.15
         version: 14.2.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1087,8 +1087,8 @@ packages:
   mitt@3.0.1:
     resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
 
-  mixpanel-browser@2.55.1:
-    resolution: {integrity: sha512-NSEPdFSJxoR1OCKWKHbtqd3BeH1c9NjXbEt0tN5TgBEO1nSDji6niU9n4MopAXOP0POET9spjpQKxZtLZKTJwA==}
+  mixpanel-browser@2.56.0:
+    resolution: {integrity: sha512-GYeEz58pV2M9MZtK8vSPL4oJmCwGS08FDDRZvZwr5VJpWdT4Lgyg6zXhmNfCmSTEIw2coaarm7HZ4FL9dAVvnA==}
 
   ms@2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
@@ -2791,7 +2791,7 @@ snapshots:
 
   mitt@3.0.1: {}
 
-  mixpanel-browser@2.55.1:
+  mixpanel-browser@2.56.0:
     dependencies:
       rrweb: 2.0.0-alpha.13
 
