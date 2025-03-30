@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       mixpanel-browser:
-        specifier: ^2.61.2
-        version: 2.61.2
+        specifier: ^2.62.0
+        version: 2.62.0
       next:
         specifier: ^14.2.15
         version: 14.2.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -22,8 +22,8 @@ importers:
         version: 18.3.1(react@18.3.1)
     devDependencies:
       '@types/mixpanel-browser':
-        specifier: ^2.51.0
-        version: 2.51.0
+        specifier: ^2.54.0
+        version: 2.54.0
       '@types/node':
         specifier: ^20
         version: 20.14.12
@@ -222,8 +222,8 @@ packages:
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
 
-  '@types/mixpanel-browser@2.51.0':
-    resolution: {integrity: sha512-or4HZRDmqMJ1OP+O6h4hB+tVDKJffpVi2bFxi/Gem5TGnE94I7OtWKXtrwdDfSGhfOLL+WQIOUOxUZHAzHNi8A==}
+  '@types/mixpanel-browser@2.54.0':
+    resolution: {integrity: sha512-7DMzIH0M9TlpCTMZidaeXris+aMUyAgMMEZtV1xeD6fSQgpCGklUKqyRgidq5hKPKuNEOWBp73549Gusig/xBA==}
 
   '@types/node@20.14.12':
     resolution: {integrity: sha512-r7wNXakLeSsGT0H1AU863vS2wa5wBOK4bWMjZz2wj+8nBx+m5PeIn0k8AloSLpRuiwdRQZwarZqHE4FNArPuJQ==}
@@ -1082,8 +1082,8 @@ packages:
   mitt@3.0.1:
     resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
 
-  mixpanel-browser@2.61.2:
-    resolution: {integrity: sha512-Ov+LdFmCKBTW8SKTz58qbiIIwABr1KgWT0ogkOtmGy8E1gLn9E9VYsoy0rK0YBsgYTKpcB+r0PbKdOmIsknlJA==}
+  mixpanel-browser@2.62.0:
+    resolution: {integrity: sha512-K22aPmHWqtT24ZK6oqBtZ9JztMCLkOC8yEtsCpMc3d+4heZUF847afxC/4/X+9Syk7CBOxLnxKlIvNM+kLZK+A==}
 
   ms@2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
@@ -1729,7 +1729,7 @@ snapshots:
 
   '@types/json5@0.0.29': {}
 
-  '@types/mixpanel-browser@2.51.0': {}
+  '@types/mixpanel-browser@2.54.0': {}
 
   '@types/node@20.14.12':
     dependencies:
@@ -2772,7 +2772,7 @@ snapshots:
 
   mitt@3.0.1: {}
 
-  mixpanel-browser@2.61.2:
+  mixpanel-browser@2.62.0:
     dependencies:
       rrweb: 2.0.0-alpha.13
 
