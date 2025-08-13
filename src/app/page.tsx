@@ -1,5 +1,5 @@
 'use client'
-import { Spotlight, SpotlightRef } from '@/components'
+import { SpotlightRef } from '@/components'
 import { Magnifier } from '@/components/icon/magnifier'
 import Link from 'next/link'
 import { useRef } from 'react'
@@ -39,7 +39,7 @@ export default function Home() {
                 Github
               </a>
               <button
-                onClick={() => spotlightRef.current?.open()}
+                onClick={() => window.dispatchEvent(new Event('open-spotlight'))}
                 aria-label="Open search"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/40 text-zinc-900 shadow-sm backdrop-blur-xl hover:bg-white/60 dark:border-white/10 dark:bg-zinc-900/60 dark:text-zinc-100 dark:hover:bg-zinc-900/80"
               >
@@ -50,12 +50,7 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Spotlight command palette */}
-      <Spotlight ref={spotlightRef}>
-        <div className="space-y-2 p-2 text-sm text-zinc-700 dark:text-zinc-200">
-          <p>Hello! Spotlight is coming soon.</p>
-        </div>
-      </Spotlight>
+  {/* Spotlight is rendered globally in layout */}
 
       {/* Hero section */}
       <section className="relative mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 pt-20 text-center sm:pt-24">

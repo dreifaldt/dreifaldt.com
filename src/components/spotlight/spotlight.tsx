@@ -1,5 +1,15 @@
 'use client'
-import { PropsWithChildren, forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import {
+  PropsWithChildren,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { useRouter } from 'next/navigation'
 import { Magnifier } from '../icon/magnifier'
 
 export type SpotlightRef = {
@@ -14,6 +24,76 @@ type SpotlightProps = PropsWithChildren<{
 export const Spotlight = forwardRef<SpotlightRef, SpotlightProps>(({ placeholder = 'Search…', children }, ref) => {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
+
+  const [query, setQuery] = useState('')
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  type Command = {
+    id: string
+    label: string
+    hint?: string
+    url: string
+    external?: boolean
+    keywords?: string[]
+  }
+
+  const commands: Command[] = useMemo(
+    () => [
+      {
+        id: 'home',
+        label: 'Home',
+        hint: 'Go to start page',
+        url: '/',
+        keywords: ['home', 'start', 'index', 'dreifaldt', 'site'],
+      },
+      {
+        id: 'linkedin',
+        label: 'LinkedIn',
+        hint: 'Open LinkedIn profile',
+        url: 'https://www.linkedin.com/in/erik-dreifaldt-293a0795/',
+        external: true,
+        keywords: ['linkedin', 'profile', 'network'],
+      },
+      {
+        id: 'mail',
+        label: 'Mail',
+        hint: 'Compose an email',
+        url: 'mailto:erik@dreifaldt.com',
+        external: true,
+        keywords: ['mail', 'email', 'contact'],
+      },
+      {
+        id: 'github',
+        label: 'GitHub',
+        hint: 'View GitHub profile',
+        url: 'https://github.com/eridr',
+        external: true,
+        keywords: ['github', 'code', 'repo', 'projects'],
+      },
+      {
+        id: 'robocaller',
+        label: 'Robocaller',
+        hint: 'AI call center page',
+        url: '/robocaller',
+        keywords: ['robo', 'caller', 'ai', 'call center'],
+      },
+    ],
+    []
+  )
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return commands
+    return commands.filter((c) =>
+      [c.label, ...(c.keywords ?? [])].some((t) => t.toLowerCase().includes(q))
+    )
+  }, [commands, query])
+
+  const resetState = useCallback(() => {
+    setQuery('')
+    setActiveIndex(0)
+  }, [])
 
   const open = () => {
     if (!dialogRef.current) return
@@ -24,7 +104,10 @@ export const Spotlight = forwardRef<SpotlightRef, SpotlightProps>(({ placeholder
       dialogRef.current.setAttribute('open', 'true')
     }
     // Focus the input on next frame so it's ready for typing
-    requestAnimationFrame(() => inputRef.current?.focus())
+    requestAnimationFrame(() => {
+      resetState()
+      inputRef.current?.focus()
+    })
   }
 
   const close = () => dialogRef.current?.close()
@@ -45,6 +128,49 @@ export const Spotlight = forwardRef<SpotlightRef, SpotlightProps>(({ placeholder
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [])
+
+  // Support programmatic open/close via custom events
+  useEffect(() => {
+    const onOpen = () => open()
+    const onClose = () => close()
+    window.addEventListener('open-spotlight', onOpen as EventListener)
+    window.addEventListener('close-spotlight', onClose as EventListener)
+    return () => {
+      window.removeEventListener('open-spotlight', onOpen as EventListener)
+      window.removeEventListener('close-spotlight', onClose as EventListener)
+    }
+  }, [])
+
+  const execute = useCallback(
+    (cmd: Command) => {
+      if (!cmd) return
+      if (cmd.external) {
+        // Use window.open for external links and mailto
+        window.open(cmd.url, '_blank', 'noopener,noreferrer')
+      } else {
+        router.push(cmd.url)
+      }
+      close()
+    },
+    [router]
+  )
+
+  const onInputKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setActiveIndex((i) => Math.min(i + 1, Math.max(0, filtered.length - 1)))
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setActiveIndex((i) => Math.max(i - 1, 0))
+      } else if (e.key === 'Enter') {
+        e.preventDefault()
+        const target = filtered[activeIndex]
+        if (target) execute(target)
+      }
+    },
+    [activeIndex, execute, filtered]
+  )
 
   return (
     <dialog
@@ -67,15 +193,51 @@ export const Spotlight = forwardRef<SpotlightRef, SpotlightProps>(({ placeholder
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              setActiveIndex(0)
+            }}
+            onKeyDown={onInputKeyDown}
           />
           <kbd className="hidden select-none rounded-md border border-white/20 bg-white/60 px-1.5 py-0.5 text-[10px] font-medium text-zinc-700 dark:border-white/10 dark:bg-zinc-900/60 dark:text-zinc-300 sm:block">
             ⌘K
           </kbd>
         </form>
 
-        {/* Results / custom content */}
+        {/* Results */}
         <div className="mt-2 max-h-[50vh] overflow-auto rounded-xl border border-white/20 bg-white/60 p-2 text-sm text-zinc-700 backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/60 dark:text-zinc-200">
-          {children ?? <p>Spotlight is coming soon.</p>}
+          <ul role="listbox" aria-label="Search results" className="divide-y divide-white/10">
+            {filtered.length === 0 && (
+              <li className="px-3 py-2 text-zinc-500">No results</li>
+            )}
+            {filtered.map((cmd, idx) => (
+              <li key={cmd.id} role="option" aria-selected={idx === activeIndex}>
+                <button
+                  type="button"
+                  onClick={() => execute(cmd)}
+                  onMouseEnter={() => setActiveIndex(idx)}
+                  className={
+                    'flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left transition ' +
+                    (idx === activeIndex
+                      ? 'bg-white/70 text-zinc-900 shadow-sm dark:bg-zinc-800/70 dark:text-zinc-100'
+                      : 'hover:bg-white/50 dark:hover:bg-zinc-800/40')
+                  }
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="inline-flex size-6 items-center justify-center rounded-md border border-white/20 bg-white/70 text-[11px] font-semibold text-zinc-700 dark:border-white/10 dark:bg-zinc-900/60 dark:text-zinc-200">
+                      {cmd.label.slice(0, 2).toUpperCase()}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="truncate font-medium">{cmd.label}</div>
+                      {cmd.hint && <div className="truncate text-[11px] text-zinc-500 dark:text-zinc-400">{cmd.hint}</div>}
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-[11px] text-zinc-500 dark:text-zinc-400">{cmd.external ? '↗' : '↪'}</div>
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="mt-2 flex items-center justify-between px-1 text-[11px] text-zinc-500 dark:text-zinc-400">
