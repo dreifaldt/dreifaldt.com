@@ -61,7 +61,7 @@ export default function Home() {
       <section className="relative mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 pt-20 text-center sm:pt-24">
         <div className="mx-auto w-full max-w-3xl">
           <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/50 px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/60 dark:text-zinc-200">
-            <span className="inline-block size-2 rounded-full bg-emerald-500" />
+            <span className="inline-block size-2 rounded-full bg-sky-700" />
             Now building with TypeScript
           </div>
           <h1 className="text-balance text-5xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-6xl">
