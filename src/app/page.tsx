@@ -7,51 +7,132 @@ import { useRef } from 'react'
 export default function Home() {
   const drawerRef = useRef<DrawerRef>(null)
   return (
-    <main>
+    <main className="relative min-h-screen overflow-hidden">
+      {/* Background layers for subtle Apple-like gradients */}
+      <div className="pointer-events-none absolute inset-0 -z-20 bg-gradient-to-b from-white to-zinc-100 dark:from-[#0b0b0b] dark:to-black" />
+      <div className="pointer-events-none absolute -top-40 right-1/2 h-[60rem] w-[60rem] -translate-x-1/2 rounded-full bg-gradient-radial from-sky-400/15 to-transparent blur-3xl dark:from-sky-600/20" />
+      <div className="pointer-events-none absolute -bottom-32 left-1/2 h-[40rem] w-[40rem] -translate-x-1/2 rounded-full bg-gradient-conic from-fuchsia-400/10 via-purple-400/10 to-transparent blur-3xl dark:from-fuchsia-600/15 dark:via-purple-600/15" />
+
+      {/* Top glassy navigation */}
+      <nav className="fixed top-3 inset-x-0 z-50">
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="flex items-center justify-between rounded-2xl border border-white/20 bg-white/60 p-2 backdrop-blur-xl shadow-lg dark:border-white/10 dark:bg-zinc-900/40">
+            <div className="flex items-center gap-2 px-2">
+              <div className="size-6 rounded-full bg-black/80 dark:bg-white" />
+              <span className="select-none text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">dreifaldt</span>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-3">
+              <Link href="/tos" className="hidden rounded-full px-3 py-1 text-sm text-zinc-700 hover:text-black dark:text-zinc-300 dark:hover:text-white sm:block">
+                ToS
+              </Link>
+              <Link href="/integrity" className="hidden rounded-full px-3 py-1 text-sm text-zinc-700 hover:text-black dark:text-zinc-300 dark:hover:text-white sm:block">
+                Integrity
+              </Link>
+              <a
+                href="https://www.linkedin.com/in/erik-dreifaldt-293a0795/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden rounded-full px-3 py-1 text-sm text-zinc-700 hover:text-black dark:text-zinc-300 dark:hover:text-white sm:block"
+              >
+                LinkedIn
+              </a>
+              <button
+                onClick={() => drawerRef.current?.open()}
+                aria-label="Open search"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/40 text-zinc-900 shadow-sm backdrop-blur-xl hover:bg-white/60 dark:border-white/10 dark:bg-zinc-900/60 dark:text-zinc-100 dark:hover:bg-zinc-900/80"
+              >
+                <Magnifier />
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Drawer for search or quick actions */}
       <Drawer ref={drawerRef}>
-        <p>Hello!</p>
+        <div className="space-y-2 p-2 text-sm text-zinc-700 dark:text-zinc-200">
+          <p>Hello! Search is coming soon.</p>
+        </div>
       </Drawer>
-      <div className="flex min-h-screen flex-col items-center justify-between lg:p-24">
-        <div className="w-full font-mono text-sm lg:flex">
-          <a
-            className="pointer-events-none flex w-full gap-2 lg:pointer-events-auto"
-            href="mailto:erik@dreifaldt.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-              Contact:&nbsp;
-              <code className="font-mono font-bold">erik@dreifaldt.com</code>
-            </p>
-          </a>
-        </div>
-        <button onClick={() => drawerRef.current?.open()} className="absolute right-6 top-4">
-          <Magnifier />
-        </button>
 
-        <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1] flex-col gap-4">
-          <h1 className="font-mono font-bold text-3xl">dreifaldt.com</h1>
-          <p className="self-start">Typescript everything</p>
+      {/* Hero section */}
+      <section className="relative mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 pt-20 text-center sm:pt-24">
+        <div className="mx-auto w-full max-w-3xl">
+          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/50 px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/60 dark:text-zinc-200">
+            <span className="inline-block size-2 rounded-full bg-emerald-500" />
+            Now building with TypeScript
+          </div>
+          <h1 className="text-balance text-5xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-6xl">
+            Design. Build. Ship.
+          </h1>
+          <p className="mt-4 text-pretty text-lg leading-relaxed text-zinc-600 dark:text-zinc-300">
+            I craft fast, accessible web experiences with modern TypeScript, React, and Next.js.
+          </p>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="mailto:erik@dreifaldt.com"
+              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black px-5 py-3 text-sm font-medium text-white shadow-lg shadow-black/20 transition hover:scale-[1.02] hover:shadow-black/30 active:scale-[0.99] dark:bg-white dark:text-black"
+            >
+              Contact
+            </a>
+            <a
+              href="https://www.linkedin.com/in/erik-dreifaldt-293a0795/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/60 px-5 py-3 text-sm font-medium text-zinc-900 shadow-sm backdrop-blur-xl transition hover:bg-white/80 active:scale-[0.99] dark:border-white/10 dark:bg-zinc-900/60 dark:text-zinc-100 dark:hover:bg-zinc-900/80"
+            >
+              LinkedIn
+            </a>
+          </div>
         </div>
 
-        <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
+        {/* Glass feature cards */}
+        <div className="mt-16 grid w-full gap-4 sm:grid-cols-2 lg:mt-20 lg:grid-cols-3">
           <a
             href="https://www.linkedin.com/in/erik-dreifaldt-293a0795/"
             target="_blank"
             rel="noopener noreferrer"
-            className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
+            className="group relative overflow-hidden rounded-3xl border border-white/20 bg-white/50 p-6 shadow-xl backdrop-blur-2xl transition hover:-translate-y-0.5 hover:bg-white/70 dark:border-white/10 dark:bg-zinc-900/50 dark:hover:bg-zinc-900/70"
           >
-            <h2 className={`mb-3 text-2xl font-semibold`}>
-              LinkedIn{' '}
-              <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                -&gt;
-              </span>
-            </h2>
-            <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>View LinkedIn profile.</p>
+            <div className="absolute -right-10 -top-10 size-24 rounded-full bg-sky-400/20 blur-2xl" />
+            <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">LinkedIn</h3>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">Visit my professional profile.</p>
+            <span className="mt-4 inline-block text-sm font-medium text-sky-700 transition group-hover:translate-x-0.5 dark:text-sky-400">
+              View profile →
+            </span>
           </a>
 
+          <Link
+            href="/tos"
+            className="group relative overflow-hidden rounded-3xl border border-white/20 bg-white/50 p-6 shadow-xl backdrop-blur-2xl transition hover:-translate-y-0.5 hover:bg-white/70 dark:border-white/10 dark:bg-zinc-900/50 dark:hover:bg-zinc-900/70"
+          >
+            <div className="absolute -right-10 -top-10 size-24 rounded-full bg-emerald-400/20 blur-2xl" />
+            <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">ToS — Saga</h3>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">Terms of service for the Saga mobile app.</p>
+            <span className="mt-4 inline-block text-sm font-medium text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">
+              Read →
+            </span>
+          </Link>
+
+          <Link
+            href="/integrity"
+            className="group relative overflow-hidden rounded-3xl border border-white/20 bg-white/50 p-6 shadow-xl backdrop-blur-2xl transition hover:-translate-y-0.5 hover:bg-white/70 dark:border-white/10 dark:bg-zinc-900/50 dark:hover:bg-zinc-900/70"
+          >
+            <div className="absolute -right-10 -top-10 size-24 rounded-full bg-purple-400/20 blur-2xl" />
+            <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Integrity</h3>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">Protect your integrity on the internet.</p>
+            <span className="mt-4 inline-block text-sm font-medium text-purple-700 transition group-hover:translate-x-0.5 dark:text-purple-400">
+              Learn more →
+            </span>
+          </Link>
         </div>
-      </div>
+      </section>
+
+      {/* Minimal footer */}
+      <footer className="relative z-10 border-t border-black/5 bg-white/40 py-10 text-center text-xs text-zinc-500 backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/40 dark:text-zinc-400">
+        © {new Date().getFullYear()} dreifaldt.com — Built with Next.js & Tailwind CSS
+      </footer>
     </main>
   )
 }
