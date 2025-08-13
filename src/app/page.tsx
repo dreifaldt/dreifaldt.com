@@ -22,12 +22,6 @@ export default function Home() {
               <span className="select-none text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">dreifaldt</span>
             </div>
             <div className="flex items-center gap-1 sm:gap-3">
-              <Link href="/tos" className="hidden rounded-full px-3 py-1 text-sm text-zinc-700 hover:text-black dark:text-zinc-300 dark:hover:text-white sm:block">
-                ToS
-              </Link>
-              <Link href="/integrity" className="hidden rounded-full px-3 py-1 text-sm text-zinc-700 hover:text-black dark:text-zinc-300 dark:hover:text-white sm:block">
-                Integrity
-              </Link>
               <a
                 href="https://www.linkedin.com/in/erik-dreifaldt-293a0795/"
                 target="_blank"
@@ -35,6 +29,14 @@ export default function Home() {
                 className="hidden rounded-full px-3 py-1 text-sm text-zinc-700 hover:text-black dark:text-zinc-300 dark:hover:text-white sm:block"
               >
                 LinkedIn
+              </a>
+              <a
+                href="https://github.com/eridr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden rounded-full px-3 py-1 text-sm text-zinc-700 hover:text-black dark:text-zinc-300 dark:hover:text-white sm:block"
+              >
+                Github
               </a>
               <button
                 onClick={() => spotlightRef.current?.open()}

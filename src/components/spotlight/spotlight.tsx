@@ -50,7 +50,7 @@ export const Spotlight = forwardRef<SpotlightRef, SpotlightProps>(({ placeholder
     <dialog
       ref={dialogRef}
       aria-label="Spotlight search"
-      className="backdrop:bg-black/50 backdrop:backdrop-blur-sm open:animate-in open:fade-in-0 open:zoom-in-95"
+  className="bg-transparent backdrop:bg-black/40 backdrop:backdrop-blur-sm open:fixed open:inset-0 open:m-0 open:w-screen open:h-screen open:z-50 open:grid open:place-items-center open:p-4 open:animate-in open:fade-in-0 open:zoom-in-95"
     >
       <div className="mx-auto w-[92vw] max-w-xl rounded-2xl border border-white/20 bg-white/70 p-2 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/70">
         <form
