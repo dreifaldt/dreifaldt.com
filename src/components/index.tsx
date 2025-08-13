@@ -1,2 +1,2 @@
 export * from './base'
-export * from './drawer/drawer'
+export * from './spotlight/spotlight'

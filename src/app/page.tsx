@@ -1,11 +1,11 @@
 'use client'
-import { Drawer, DrawerRef } from '@/components'
+import { Spotlight, SpotlightRef } from '@/components'
 import { Magnifier } from '@/components/icon/magnifier'
 import Link from 'next/link'
 import { useRef } from 'react'
 
 export default function Home() {
-  const drawerRef = useRef<DrawerRef>(null)
+  const spotlightRef = useRef<SpotlightRef>(null)
   return (
     <main className="relative min-h-screen overflow-hidden">
       {/* Background layers for subtle Apple-like gradients */}
@@ -37,7 +37,7 @@ export default function Home() {
                 LinkedIn
               </a>
               <button
-                onClick={() => drawerRef.current?.open()}
+                onClick={() => spotlightRef.current?.open()}
                 aria-label="Open search"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/40 text-zinc-900 shadow-sm backdrop-blur-xl hover:bg-white/60 dark:border-white/10 dark:bg-zinc-900/60 dark:text-zinc-100 dark:hover:bg-zinc-900/80"
               >
@@ -48,12 +48,12 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Drawer for search or quick actions */}
-      <Drawer ref={drawerRef}>
+      {/* Spotlight command palette */}
+      <Spotlight ref={spotlightRef}>
         <div className="space-y-2 p-2 text-sm text-zinc-700 dark:text-zinc-200">
-          <p>Hello! Search is coming soon.</p>
+          <p>Hello! Spotlight is coming soon.</p>
         </div>
-      </Drawer>
+      </Spotlight>
 
       {/* Hero section */}
       <section className="relative mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 pt-20 text-center sm:pt-24">
