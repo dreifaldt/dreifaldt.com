@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "outdated": "pnpm outdated",
+    "upgrade": "pnpm up --latest"
   },
   "dependencies": {
     "mixpanel-browser": "^2.68.0",
@@ -15,13 +17,13 @@
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
     "@types/mixpanel-browser": "^2.66.0",
     "@types/node": "^24.2.1",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
-    "autoprefixer": "^10.4.21",
     "eslint": "^9.33.0",
     "eslint-config-next": "15.4.6",
     "postcss": "^8.5.6",
