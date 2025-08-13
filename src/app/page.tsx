@@ -120,13 +120,13 @@ export default function Home() {
           </a>
 
           <Link
-            href="/integrity"
+            href="/robocaller"
             className="group relative overflow-hidden rounded-3xl border border-white/20 bg-white/50 p-6 shadow-xl backdrop-blur-2xl transition hover:-translate-y-0.5 hover:bg-white/70 dark:border-white/10 dark:bg-zinc-900/50 dark:hover:bg-zinc-900/70"
           >
-            <div className="absolute -right-10 -top-10 size-24 rounded-full bg-purple-400/20 blur-2xl" />
-            <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Integrity</h3>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">Protect your integrity on the internet.</p>
-            <span className="mt-4 inline-block text-sm font-medium text-purple-700 transition group-hover:translate-x-0.5 dark:text-purple-400">
+            <div className="absolute -right-10 -top-10 size-24 rounded-full bg-indigo-400/20 blur-2xl" />
+            <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Robocaller</h3>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">AI call center.</p>
+            <span className="mt-4 inline-block text-sm font-medium text-indigo-700 transition group-hover:translate-x-0.5 dark:text-indigo-400">
               Learn more →
             </span>
           </Link>
