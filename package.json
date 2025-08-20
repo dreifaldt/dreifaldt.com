@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "outdated": "pnpm outdated",
-    "upgrade": "pnpm up --latest"
+    "outdated": "npm outdated",
+    "upgrade": "npm update"
   },
   "dependencies": {
     "mixpanel-browser": "^2.70.0",
