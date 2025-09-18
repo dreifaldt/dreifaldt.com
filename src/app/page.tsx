@@ -252,8 +252,11 @@ export default function Home() {
       {/* Spacer for scroll height during hero transitions */}
       <div className="h-[2000px] w-full"></div>
 
+      {/* Spacer before About section */}
+      <div className="pt-[75vh]" />
+
       {/* Values Section */}
-      <section className="pt-[75vh] pb-24 sm:pb-32 bg-gray-50">
+      <section id="about" className="pb-24 sm:pb-32 bg-gray-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-normal tracking-tight text-black">
