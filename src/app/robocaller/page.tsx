@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 export const metadata: Metadata = {
-  title: 'Robocaller — AI Call Center',
   description:
-    'Robocaller is an AI-powered call center that answers, qualifies, and books meetings 24/7. Reduce missed calls, qualify leads instantly, and automate scheduling.'
+    'Robocaller is an AI-powered call center that answers, qualifies, and books meetings 24/7. Reduce missed calls, qualify leads instantly, and automate scheduling.',
+  title: 'Robocaller — AI Call Center'
 }
 
 export default function RobocallerPage() {
@@ -16,10 +17,10 @@ export default function RobocallerPage() {
       <nav className="sticky top-3 inset-x-0 z-50">
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex items-center justify-between rounded-2xl border border-white/20 bg-white/60 p-2 backdrop-blur-xl shadow-lg dark:border-white/10 dark:bg-zinc-900/40">
-            <a href="/" className="flex items-center gap-2 px-2">
+            <Link href="/" className="flex items-center gap-2 px-2">
               <div className="size-6 rounded-full bg-black/80 dark:bg-white" />
               <span className="select-none text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">dreifaldt</span>
-            </a>
+            </Link>
             <a
               href="#contact"
               className="rounded-full border border-white/20 bg-black px-3 py-1 text-xs font-medium text-white shadow-sm dark:bg-white dark:text-black"
@@ -51,12 +52,12 @@ export default function RobocallerPage() {
             >
               Book a demo
             </a>
-            <a
+            <Link
               href="/"
               className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/60 px-5 py-3 text-sm font-medium text-zinc-900 shadow-sm backdrop-blur-xl transition hover:bg-white/80 active:scale-[0.99] dark:border-white/10 dark:bg-zinc-900/60 dark:text-zinc-100 dark:hover:bg-zinc-900/80"
             >
               Back to home
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -64,16 +65,16 @@ export default function RobocallerPage() {
         <div className="mt-16 grid w-full gap-4 sm:grid-cols-2 lg:mt-20 lg:grid-cols-3">
           {[
             {
-              title: 'Never miss a lead',
-              desc: 'Answer every inbound call in seconds, even after hours and on weekends.'
+              desc: 'Answer every inbound call in seconds, even after hours and on weekends.',
+              title: 'Never miss a lead'
             },
             {
-              title: 'Qualify automatically',
-              desc: 'Ask the right questions, capture intent, and score leads consistently.'
+              desc: 'Ask the right questions, capture intent, and score leads consistently.',
+              title: 'Qualify automatically'
             },
             {
-              title: 'Instant scheduling',
-              desc: 'Offer times, handle objections, and book directly to your calendar.'
+              desc: 'Offer times, handle objections, and book directly to your calendar.',
+              title: 'Instant scheduling'
             },
           ].map((card) => (
             <div

@@ -67,7 +67,7 @@ export default function Home() {
               {/* Logo - matching Microsoft AI style */}
               <div className="flex items-center">
                 <button
-                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  onClick={() => window.scrollTo({ behavior: 'smooth', top: 0 })}
                   className="text-xl font-bold text-black tracking-tight hover:text-black/70 transition-colors cursor-pointer"
                 >
                   Dreifaldt Consulting

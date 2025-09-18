@@ -41,42 +41,42 @@ export const Spotlight = forwardRef<SpotlightRef, SpotlightProps>(({ placeholder
   const commands: Command[] = useMemo(
     () => [
       {
-        id: 'home',
-        label: 'Home',
         hint: 'Go to start page',
-        url: '/',
+        id: 'home',
         keywords: ['home', 'start', 'index', 'dreifaldt', 'site'],
+        label: 'Home',
+        url: '/'
       },
       {
-        id: 'linkedin',
-        label: 'LinkedIn',
+        external: true,
         hint: 'Open LinkedIn profile',
-        url: 'https://www.linkedin.com/in/erik-dreifaldt-293a0795/',
-        external: true,
+        id: 'linkedin',
         keywords: ['linkedin', 'profile', 'network'],
+        label: 'LinkedIn',
+        url: 'https://www.linkedin.com/in/erik-dreifaldt-293a0795/'
       },
       {
-        id: 'mail',
-        label: 'Mail',
+        external: true,
         hint: 'Compose an email',
-        url: 'mailto:erik@dreifaldt.com',
-        external: true,
+        id: 'mail',
         keywords: ['mail', 'email', 'contact'],
+        label: 'Mail',
+        url: 'mailto:erik@dreifaldt.com'
       },
       {
-        id: 'github',
-        label: 'GitHub',
-        hint: 'View GitHub profile',
-        url: 'https://github.com/eridr',
         external: true,
+        hint: 'View GitHub profile',
+        id: 'github',
         keywords: ['github', 'code', 'repo', 'projects'],
+        label: 'GitHub',
+        url: 'https://github.com/eridr'
       },
       {
-        id: 'robocaller',
-        label: 'Robocaller',
         hint: 'AI call center page',
-        url: '/robocaller',
+        id: 'robocaller',
         keywords: ['robo', 'caller', 'ai', 'call center'],
+        label: 'Robocaller',
+        url: '/robocaller'
       },
     ],
     []
@@ -112,7 +112,7 @@ export const Spotlight = forwardRef<SpotlightRef, SpotlightProps>(({ placeholder
 
   const close = () => dialogRef.current?.close()
 
-  useImperativeHandle(ref, () => ({ open, close }))
+  useImperativeHandle(ref, () => ({ close, open }))
 
   // Global keyboard shortcut: Cmd+K / Ctrl+K to open, Esc to close
   useEffect(() => {
@@ -127,7 +127,7 @@ export const Spotlight = forwardRef<SpotlightRef, SpotlightProps>(({ placeholder
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [])
+  }, [open])
 
   // Support programmatic open/close via custom events
   useEffect(() => {
@@ -139,7 +139,7 @@ export const Spotlight = forwardRef<SpotlightRef, SpotlightProps>(({ placeholder
       window.removeEventListener('open-spotlight', onOpen as EventListener)
       window.removeEventListener('close-spotlight', onClose as EventListener)
     }
-  }, [])
+  }, [open])
 
   const execute = useCallback(
     (cmd: Command) => {
