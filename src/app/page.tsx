@@ -93,7 +93,7 @@ export default function Home() {
 
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-white pt-32 pb-24 sm:pt-40 sm:pb-32">
+      <section className="relative overflow-hidden bg-white pt-32 pb-24 sm:pt-40 sm:pb-32 h-screen w-screen">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="max-w-2xl">
