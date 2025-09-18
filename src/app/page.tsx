@@ -66,9 +66,12 @@ export default function Home() {
             <div className="flex justify-between items-center">
               {/* Logo - matching Microsoft AI style */}
               <div className="flex items-center">
-                <span className="text-xl font-bold text-black tracking-tight">
+                <button
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  className="text-xl font-bold text-black tracking-tight hover:text-black/70 transition-colors cursor-pointer"
+                >
                   Dreifaldt Consulting
-                </span>
+                </button>
               </div>
 
               {/* Desktop Navigation - matching Microsoft AI spacing and typography */}
@@ -256,7 +259,7 @@ export default function Home() {
       <div className="pt-[75vh]" />
 
       {/* Values Section */}
-      <section id="about" className="pb-24 sm:pb-32 bg-gray-50">
+      <section id="about" className="pt-40 pb-24 sm:pb-32 bg-gray-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-normal tracking-tight text-black">
