@@ -100,18 +100,10 @@ export default function Home() {
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-normal tracking-tight text-black leading-none">
                 We build
                 <br />
-                <em className="italic">technology</em>
-              </h1>
-              <h2 className="mt-8 text-5xl sm:text-6xl lg:text-7xl font-normal tracking-tight text-black leading-none">
-                We build
-                <br />
-                <em className="italic">experiences</em>
-              </h2>
-              <h2 className="mt-8 text-5xl sm:text-6xl lg:text-7xl font-normal tracking-tight text-black leading-none">
-                We build
-                <br />
+                <em className="italic">technology</em><br />
+                <em className="italic">experiences</em><br />
                 <em className="italic">solutions</em>
-              </h2>
+              </h1>
               <p className="mt-8 text-xl text-gray-600 leading-relaxed">
                 Dreifaldt Consulting partners with organizations to create innovative solutions that drive meaningful change and lasting impact.
               </p>
