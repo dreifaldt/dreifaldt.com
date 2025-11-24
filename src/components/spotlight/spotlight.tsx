@@ -71,13 +71,6 @@ export const Spotlight = forwardRef<SpotlightRef, SpotlightProps>(({ placeholder
         label: 'GitHub',
         url: 'https://github.com/eridr'
       },
-      {
-        hint: 'AI call center page',
-        id: 'robocaller',
-        keywords: ['robo', 'caller', 'ai', 'call center'],
-        label: 'Robocaller',
-        url: '/robocaller'
-      },
     ],
     []
   )
