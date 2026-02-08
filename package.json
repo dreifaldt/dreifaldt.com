@@ -17,7 +17,7 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.1",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/mixpanel-browser": "^2.66.0",
     "@types/node": "^24.10.1",
