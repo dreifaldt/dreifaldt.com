@@ -98,32 +98,41 @@
     <!-- Sub agents -->
     <div class="mb-10">
       <h3 id="sub-agents" class="text-xl font-semibold text-white mb-3">Sub Agents / Teams</h3>
-      <p class="leading-relaxed">
+      <p class="leading-relaxed mb-4">
         Claude can delegate work to specialized agents —
         <code class="code-inline">Explore</code> for codebase research,
         <code class="code-inline">Plan</code> for architecture,
         <code class="code-inline">Bash</code> for shell commands, and more. They run in parallel
         when tasks are independent.
       </p>
+      <img src="/subagents-vs-agent-teams-dark.png" alt="Sub agents vs agent teams comparison" class="rounded-md border border-gray-800 w-full" />
     </div>
 
     <!-- Skills -->
     <div class="mb-10">
       <h3 id="skills" class="text-xl font-semibold text-white mb-3">Skills</h3>
-      <p class="leading-relaxed">
+      <p class="leading-relaxed mb-3">
         Slash commands like <code class="code-inline">/commit</code> and
         <code class="code-inline">/review-pr</code> invoke built-in or custom skills.
         You can create your own skills to automate repetitive workflows.
+      </p>
+      <p class="leading-relaxed">
+        Check out the <a href="https://code.claude.com/docs/en/skills" class="text-cyan-400 hover:underline" target="_blank" rel="noopener noreferrer">skills documentation</a>
+        or community collections like <a href="https://github.com/expo/skills" class="text-cyan-400 hover:underline" target="_blank" rel="noopener noreferrer">Expo's skills</a> for inspiration.
       </p>
     </div>
 
     <!-- MCPs -->
     <div class="mb-10">
       <h3 id="mcps" class="text-xl font-semibold text-white mb-3">MCPs</h3>
-      <p class="leading-relaxed">
+      <p class="leading-relaxed mb-3">
         <strong class="text-white">Model Context Protocol</strong> servers extend Claude's capabilities —
         connect to databases, APIs, or any external service. Think of them as plugins that give Claude
         new tools to use.
+      </p>
+      <p class="leading-relaxed">
+        <a href="https://code.claude.com/docs/en/plugins-reference" class="text-cyan-400 hover:underline" target="_blank" rel="noopener noreferrer">Language server protocols (LSPs)</a> for your code's language give Claude real-time diagnostics,
+        type checking, and go-to-definition — making it far more accurate when editing code.
       </p>
     </div>
 
