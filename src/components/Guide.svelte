@@ -128,12 +128,23 @@
     </div>
 
     <!-- Hooks -->
-    <div>
+    <div class="mb-10">
       <h3 class="text-xl font-semibold text-white mb-3">Hooks</h3>
       <p class="leading-relaxed">
         Shell commands that auto-trigger on Claude Code events. For example, run a linter every time
         a file is saved, or run tests after every code edit. They keep quality guardrails in place
         without manual effort.
+      </p>
+    </div>
+
+    <!-- Modes -->
+    <div>
+      <h3 class="text-xl font-semibold text-white mb-3">Modes</h3>
+      <p class="leading-relaxed">
+        Press <kbd class="code-inline">Shift+Tab</kbd> to cycle through Claude Code's input modes:
+        <strong class="text-white">Normal</strong> for standard prompts,
+        <strong class="text-white">Plan</strong> to design an approach before coding, and
+        <strong class="text-white">Auto-accept</strong> to skip approval prompts and let Claude work autonomously.
       </p>
     </div>
   </div>
