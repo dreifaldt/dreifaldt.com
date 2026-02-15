@@ -33,11 +33,21 @@
       Then follow the slash-command workflow inside Claude Code:
     </p>
     <ol class="list-decimal list-inside space-y-2 ml-2">
-      <li><code class="code-inline">/speckit.specify</code> — Write or refine your spec</li>
-      <li><code class="code-inline">/speckit.plan</code> — Generate an implementation plan</li>
-      <li><code class="code-inline">/speckit.tasks</code> — Break the plan into tasks</li>
-      <li><code class="code-inline">/speckit.implement</code> — Execute tasks one by one</li>
+      <li><code class="code-inline">/speckit.constitution</code> — Establish project principles</li>
+      <li><code class="code-inline">/speckit.specify</code> — Create baseline specification</li>
+      <li><code class="code-inline">/speckit.plan</code> — Create implementation plan</li>
+      <li><code class="code-inline">/speckit.tasks</code> — Generate actionable tasks</li>
+      <li><code class="code-inline">/speckit.implement</code> — Execute implementation</li>
     </ol>
+
+    <p class="leading-relaxed mb-4 mt-6">
+      Optional commands to improve quality and confidence:
+    </p>
+    <ul class="list-disc list-inside space-y-2 ml-2">
+      <li><code class="code-inline">/speckit.clarify</code> — Ask structured questions to de-risk ambiguous areas before planning</li>
+      <li><code class="code-inline">/speckit.analyze</code> — Cross-artifact consistency and alignment report</li>
+      <li><code class="code-inline">/speckit.checklist</code> — Generate quality checklists to validate requirements</li>
+    </ul>
   </div>
 
   <hr class="border-gray-800 mb-16" />
