@@ -2,10 +2,12 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import '../styles/global.css'
 import Hero from '../components/Hero.svelte'
+import Guide from '../components/Guide.svelte'
 ---
 
 <BaseLayout title="dreifaldt.com">
   <main class="min-h-screen bg-gray-950 text-white">
     <Hero client:load />
+    <Guide />
   </main>
 </BaseLayout>
