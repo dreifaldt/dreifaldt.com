@@ -1,9 +1,20 @@
 <script lang="ts">
+  import HeroBackground from './HeroBackground.svelte'
+  import HeroTitle from './HeroTitle.svelte'
+  import ScrollIndicator from './ScrollIndicator.svelte'
+
+  let titleDone = $state(false)
   let tagline = $state('')
   const fullTagline = 'Code with confidence.'
   let showCursor = $state(true)
 
+  function scrollToGuide() {
+    document.getElementById('what-is-ai')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   $effect(() => {
+    if (!titleDone) return
+
     let i = 0
     const typing = setInterval(() => {
       if (i < fullTagline.length) {
@@ -25,35 +36,57 @@
   })
 </script>
 
-<section class="flex flex-col items-center justify-center min-h-screen px-4">
-  <div class="text-center">
-    <h1 class="hero-title font-mono font-bold tracking-tight text-glow">
-      Claude Code Captain
-    </h1>
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<section id="hero" class="hero relative flex flex-col items-center justify-center min-h-screen px-4 overflow-hidden cursor-pointer" onclick={scrollToGuide}>
+  <HeroBackground />
+
+  <div class="relative z-10 text-center">
+    <HeroTitle text="Become a Claude Code Captain" onComplete={() => titleDone = true} />
     <div class="mt-6 font-mono text-lg md:text-xl text-cyan-400/80">
       <span class="terminal-prompt">$ </span>
       <span>{tagline}</span>
       <span class="cursor" class:opacity-0={!showCursor}>&#x2588;</span>
     </div>
   </div>
+
+  <ScrollIndicator />
 </section>
 
 <style>
-  .hero-title {
-    font-size: clamp(2rem, 6vw, 4.5rem);
-    line-height: 1.1;
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.03) 2px,
+      rgba(255, 255, 255, 0.03) 4px
+    );
+    z-index: 2;
+    pointer-events: none;
   }
 
-  .text-glow {
-    color: #e2e8f0;
-    text-shadow:
-      0 0 20px rgba(34, 211, 238, 0.15),
-      0 0 40px rgba(34, 211, 238, 0.08);
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 50%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+    z-index: 2;
+    pointer-events: none;
   }
 
   .terminal-prompt {
     color: #4ade80;
-    text-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+    text-shadow:
+      0 0 8px rgba(74, 222, 128, 0.3),
+      0 0 16px rgba(74, 222, 128, 0.15);
   }
 
   .cursor {

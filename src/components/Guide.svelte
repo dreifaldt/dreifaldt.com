@@ -1,8 +1,8 @@
-<section class="guide px-4 py-20 md:py-32 max-w-3xl mx-auto font-sans text-gray-300">
+<section id="guide" class="guide px-4 py-20 md:py-32 max-w-3xl mx-auto font-sans text-gray-300">
 
   <!-- What is AI? -->
   <div class="mb-16">
-    <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">What is AI?</h2>
+    <h2 id="what-is-ai" class="text-2xl md:text-3xl font-bold text-white mb-6 pt-16">What is AI?</h2>
     <p class="leading-relaxed mb-4">
       AI — specifically large language models (LLMs) — are tools that understand and generate text.
       They've read enormous amounts of code and documentation, so they can help you write, debug, and
@@ -18,7 +18,7 @@
 
   <!-- Getting Started with Spec Kit -->
   <div class="mb-16">
-    <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Getting Started with Spec Kit</h2>
+    <h2 id="getting-started" class="text-2xl md:text-3xl font-bold text-white mb-6">Getting Started with Spec Kit</h2>
     <p class="leading-relaxed mb-4">
       <strong class="text-white">Spec-driven development</strong> means you write a short specification
       <em>before</em> you write code. The spec becomes the single source of truth — for you and for the AI.
@@ -54,11 +54,11 @@
 
   <!-- Claude Code Essentials -->
   <div>
-    <h2 class="text-2xl md:text-3xl font-bold text-white mb-8">Claude Code Essentials</h2>
+    <h2 id="essentials" class="text-2xl md:text-3xl font-bold text-white mb-8">Claude Code Essentials</h2>
 
     <!-- CLAUDE.md -->
     <div class="mb-10">
-      <h3 class="text-xl font-semibold text-white mb-3">CLAUDE.md</h3>
+      <h3 id="claude-md" class="text-xl font-semibold text-white mb-3">CLAUDE.md</h3>
       <p class="leading-relaxed mb-3">
         A markdown file at the root of your project that tells Claude how your codebase works —
         conventions, stack details, do's and don'ts. It's the foundation of every session.
@@ -70,7 +70,7 @@
 
     <!-- Context -->
     <div class="mb-10">
-      <h3 class="text-xl font-semibold text-white mb-3">Context</h3>
+      <h3 id="context" class="text-xl font-semibold text-white mb-3">Context</h3>
       <p class="leading-relaxed mb-4">
         Claude builds understanding from everything you give it. The more precise your context,
         the better the output. Here's how to feed it:
@@ -97,7 +97,7 @@
 
     <!-- Sub agents -->
     <div class="mb-10">
-      <h3 class="text-xl font-semibold text-white mb-3">Sub Agents / Teams</h3>
+      <h3 id="sub-agents" class="text-xl font-semibold text-white mb-3">Sub Agents / Teams</h3>
       <p class="leading-relaxed">
         Claude can delegate work to specialized agents —
         <code class="code-inline">Explore</code> for codebase research,
@@ -109,7 +109,7 @@
 
     <!-- Skills -->
     <div class="mb-10">
-      <h3 class="text-xl font-semibold text-white mb-3">Skills</h3>
+      <h3 id="skills" class="text-xl font-semibold text-white mb-3">Skills</h3>
       <p class="leading-relaxed">
         Slash commands like <code class="code-inline">/commit</code> and
         <code class="code-inline">/review-pr</code> invoke built-in or custom skills.
@@ -119,7 +119,7 @@
 
     <!-- MCPs -->
     <div class="mb-10">
-      <h3 class="text-xl font-semibold text-white mb-3">MCPs</h3>
+      <h3 id="mcps" class="text-xl font-semibold text-white mb-3">MCPs</h3>
       <p class="leading-relaxed">
         <strong class="text-white">Model Context Protocol</strong> servers extend Claude's capabilities —
         connect to databases, APIs, or any external service. Think of them as plugins that give Claude
@@ -129,7 +129,7 @@
 
     <!-- Hooks -->
     <div class="mb-10">
-      <h3 class="text-xl font-semibold text-white mb-3">Hooks</h3>
+      <h3 id="hooks" class="text-xl font-semibold text-white mb-3">Hooks</h3>
       <p class="leading-relaxed">
         Shell commands that auto-trigger on Claude Code events. For example, run a linter every time
         a file is saved, or run tests after every code edit. They keep quality guardrails in place
@@ -139,7 +139,7 @@
 
     <!-- Modes -->
     <div>
-      <h3 class="text-xl font-semibold text-white mb-3">Modes</h3>
+      <h3 id="modes" class="text-xl font-semibold text-white mb-3">Modes</h3>
       <p class="leading-relaxed">
         Press <kbd class="code-inline">Shift+Tab</kbd> to cycle through Claude Code's input modes:
         <strong class="text-white">Normal</strong> for standard prompts,
