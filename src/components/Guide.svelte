@@ -71,12 +71,28 @@
     <!-- Context -->
     <div class="mb-10">
       <h3 class="text-xl font-semibold text-white mb-3">Context</h3>
-      <p class="leading-relaxed">
-        Claude reads your <strong class="text-white">codebase</strong> (files, directory structure),
-        the <strong class="text-white">conversation history</strong>, and your
-        <strong class="text-white">CLAUDE.md</strong> to build an understanding of the project.
-        The more precise your context, the better the output.
+      <p class="leading-relaxed mb-4">
+        Claude builds understanding from everything you give it. The more precise your context,
+        the better the output. Here's how to feed it:
       </p>
+      <ul class="list-disc list-inside space-y-2 ml-2">
+        <li>
+          <code class="code-inline">@file</code> / <code class="code-inline">@folder</code> — Reference files
+          and directories inline. Type <code class="code-inline">@</code> and autocomplete will suggest paths
+        </li>
+        <li>
+          <strong class="text-white">Images</strong> — Paste screenshots (<kbd class="code-inline">Ctrl+V</kbd>),
+          drag and drop, or reference image paths directly
+        </li>
+        <li>
+          <strong class="text-white">Web</strong> — Claude can fetch URLs and search the web
+          for up-to-date documentation and references
+        </li>
+        <li>
+          <strong class="text-white">IDE integration</strong> — When running inside VS Code or JetBrains,
+          Claude gets access to your open files, selection, and editor state
+        </li>
+      </ul>
     </div>
 
     <!-- Sub agents -->
