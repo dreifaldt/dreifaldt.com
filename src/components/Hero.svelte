@@ -27,9 +27,8 @@
 
 <section class="flex flex-col items-center justify-center min-h-screen px-4">
   <div class="text-center">
-    <h1 class="hero-title font-mono font-bold tracking-tight">
-      <span class="text-glow">Claude Code Captain</span>
-      <sup class="superscript">C&#xB3;</sup>
+    <h1 class="hero-title font-mono font-bold tracking-tight text-glow">
+      Claude Code Captain
     </h1>
     <div class="mt-6 font-mono text-lg md:text-xl text-cyan-400/80">
       <span class="terminal-prompt">$ </span>
@@ -50,14 +49,6 @@
     text-shadow:
       0 0 20px rgba(34, 211, 238, 0.15),
       0 0 40px rgba(34, 211, 238, 0.08);
-  }
-
-  .superscript {
-    font-size: 0.4em;
-    color: #22d3ee;
-    vertical-align: super;
-    margin-left: 0.1em;
-    text-shadow: 0 0 12px rgba(34, 211, 238, 0.4);
   }
 
   .terminal-prompt {
