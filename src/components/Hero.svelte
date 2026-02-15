@@ -1,6 +1,6 @@
 <script lang="ts">
   let tagline = $state('')
-  const fullTagline = 'Navigating codebases with confidence.'
+  const fullTagline = 'Code with confidence.'
   let showCursor = $state(true)
 
   $effect(() => {
