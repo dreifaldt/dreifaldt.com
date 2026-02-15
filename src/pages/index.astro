@@ -1,13 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import '../styles/global.css'
-import HelloWorld from '../components/HelloWorld.svelte'
-import Counter from '../components/Counter.svelte'
+import Hero from '../components/Hero.svelte'
 ---
 
 <BaseLayout title="dreifaldt.com">
   <main class="min-h-screen bg-gray-950 text-white">
-    <HelloWorld client:load />
-    <Counter client:load />
+    <Hero client:load />
   </main>
 </BaseLayout>
