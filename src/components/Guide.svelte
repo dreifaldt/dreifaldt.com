@@ -126,9 +126,10 @@
     <div class="mb-10">
       <h3 id="mcps" class="text-xl font-semibold text-white mb-3">MCPs</h3>
       <p class="leading-relaxed mb-3">
-        <strong class="text-white">Model Context Protocol</strong> servers extend Claude's capabilities —
-        connect to databases, APIs, or any external service. Think of them as plugins that give Claude
-        new tools to use.
+        <a href="https://code.claude.com/docs/en/mcp" class="text-cyan-400 hover:underline" target="_blank" rel="noopener noreferrer">Model Context Protocol (MCP)</a>
+        is an open standard that lets Claude connect to external tools and data sources — databases, APIs,
+        GitHub, Slack, browsers, and hundreds more. Each MCP server gives Claude new capabilities
+        it can use during your session, like querying a database or creating a pull request.
       </p>
       <p class="leading-relaxed">
         <a href="https://code.claude.com/docs/en/plugins-reference" class="text-cyan-400 hover:underline" target="_blank" rel="noopener noreferrer">Language server protocols (LSPs)</a> for your code's language give Claude real-time diagnostics,
