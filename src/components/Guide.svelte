@@ -139,6 +139,11 @@
         GitHub, Slack, browsers, and hundreds more. Each MCP server gives Claude new capabilities
         it can use during your session, like querying a database or creating a pull request.
       </p>
+    </div>
+
+    <!-- LSPs -->
+    <div class="mb-10">
+      <h3 id="lsps" class="text-xl font-semibold text-white mb-3">LSPs</h3>
       <p class="leading-relaxed">
         <a href="https://code.claude.com/docs/en/plugins-reference" class="text-cyan-400 hover:underline" target="_blank" rel="noopener noreferrer">Language server protocols (LSPs)</a> for your code's language give Claude real-time diagnostics,
         type checking, and go-to-definition — making it far more accurate when editing code.
