@@ -66,6 +66,14 @@
       <div class="code-block">
         <code># CLAUDE.md{'\n'}Never use the `any` type.{'\n'}Always run tests before committing.</code>
       </div>
+      <p class="leading-relaxed mb-3 mt-4">
+        Create your first CLAUDE.md by running the <code class="code-inline">/init</code> slash command
+        inside Claude Code. It scans your project and generates a starting point with your stack,
+        conventions, and common commands.
+      </p>
+      <div class="code-block">
+        <code>/init</code>
+      </div>
     </div>
 
     <!-- Context -->
