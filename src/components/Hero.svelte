@@ -338,7 +338,7 @@
 
   @media (max-width: 768px) { .scene { display: none; } }
 
-  /* The main floating visionOS window */
+  /* The main floating visionOS window — light mode frosted glass */
   .vision-window {
     position: relative;
     z-index: 10;
@@ -347,21 +347,23 @@
     display: flex;
     flex-direction: column;
 
-    background: rgba(22, 18, 12, 0.72);
-    backdrop-filter: blur(44px) saturate(160%);
-    -webkit-backdrop-filter: blur(44px) saturate(160%);
-    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    /* Light frosted glass — just like visionOS light mode */
+    background: rgba(250, 246, 240, 0.42);
+    backdrop-filter: blur(64px) saturate(200%) brightness(1.06);
+    -webkit-backdrop-filter: blur(64px) saturate(200%) brightness(1.06);
+    border: 0.5px solid rgba(255, 255, 255, 0.80);
     border-radius: 42px;
     overflow: hidden;
 
     box-shadow:
-      inset 0 0.5px 0 rgba(255, 255, 255, 0.18),
-      0 2px 8px rgba(0, 0, 0, 0.25),
-      0 32px 80px rgba(0, 0, 0, 0.55),
-      0 80px 160px rgba(0, 0, 0, 0.35);
+      inset 0 1px 0 rgba(255, 255, 255, 0.90),
+      inset 0 -0.5px 0 rgba(0, 0, 0, 0.06),
+      0 2px 8px rgba(0, 0, 0, 0.06),
+      0 24px 60px rgba(0, 0, 0, 0.18),
+      0 64px 120px rgba(0, 0, 0, 0.12);
   }
 
-  /* Rainbow shimmer on bottom edge (like visionOS window glow) */
+  /* Subtle rainbow shimmer on bottom edge */
   .vision-window::after {
     content: '';
     position: absolute;
@@ -372,9 +374,9 @@
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(100, 120, 255, 0.3),
-      rgba(200, 80, 255, 0.3),
-      rgba(255, 120, 60, 0.3),
+      rgba(100, 120, 255, 0.25),
+      rgba(200, 80, 255, 0.2),
+      rgba(255, 120, 60, 0.2),
       transparent
     );
   }
@@ -384,12 +386,12 @@
     top: 0;
     left: 15%;
     right: 15%;
-    height: 0.5px;
+    height: 1px;
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(255, 255, 255, 0.3) 30%,
-      rgba(255, 255, 255, 0.3) 70%,
+      rgba(255, 255, 255, 0.95) 30%,
+      rgba(255, 255, 255, 0.95) 70%,
       transparent 100%
     );
     pointer-events: none;
@@ -411,17 +413,17 @@
     font-size: 0.64rem;
     font-weight: 600;
     letter-spacing: 0.22em;
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(40, 28, 12, 0.55);
     flex: 1;
     text-align: center;
   }
 
   .topbar-pill {
     padding: 0.42rem 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: 0.5px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.50);
+    border: 0.5px solid rgba(255, 255, 255, 0.70);
     border-radius: 50px;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(30, 20, 8, 0.65);
     font-family: inherit;
     font-size: 0.62rem;
     font-weight: 500;
@@ -433,10 +435,10 @@
     min-width: 80px;
     justify-content: center;
     transition: all 0.2s ease;
-    box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.12);
+    box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.85), 0 1px 4px rgba(0,0,0,0.08);
   }
 
-  .topbar-pill:hover { background: rgba(255, 255, 255, 0.16); color: rgba(255,255,255,0.9); }
+  .topbar-pill:hover { background: rgba(255, 255, 255, 0.70); color: rgba(30,20,8,0.85); }
 
   .topbar-pill-cta {
     background: rgba(10, 132, 255, 0.85);
@@ -657,13 +659,13 @@
   .identity-name {
     font-size: 0.68rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.82);
+    color: rgba(30, 20, 8, 0.78);
     letter-spacing: 0.04em;
   }
 
   .identity-role {
     font-size: 0.54rem;
-    color: rgba(255, 255, 255, 0.32);
+    color: rgba(40, 28, 12, 0.40);
     letter-spacing: 0.05em;
   }
 
@@ -685,14 +687,14 @@
   .sug-title {
     font-size: 0.7rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(40, 28, 12, 0.60);
     letter-spacing: 0.04em;
   }
 
   .sug-more {
     font-size: 0.6rem;
     font-weight: 500;
-    color: rgba(10, 132, 255, 0.85);
+    color: rgba(10, 100, 220, 0.85);
     text-decoration: none;
     letter-spacing: 0.04em;
   }
@@ -725,31 +727,32 @@
     width: 62px;
     height: 62px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    border: 0.5px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.60);
+    border: 0.5px solid rgba(255, 255, 255, 0.80);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
     box-shadow:
-      inset 0 0.5px 0 rgba(255,255,255,0.18),
-      0 4px 16px rgba(0,0,0,0.35);
+      inset 0 0.5px 0 rgba(255,255,255,0.95),
+      0 2px 10px rgba(0,0,0,0.10),
+      0 1px 3px rgba(0,0,0,0.06);
     transition: background 0.2s, box-shadow 0.2s;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
 
   .chip:hover .chip-icon {
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.82);
     box-shadow:
-      inset 0 0.5px 0 rgba(255,255,255,0.25),
-      0 6px 20px rgba(0,0,0,0.4);
+      inset 0 0.5px 0 rgba(255,255,255,1),
+      0 4px 16px rgba(0,0,0,0.14);
   }
 
   .chip-label {
     font-size: 0.56rem;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.58);
+    color: rgba(40, 28, 12, 0.55);
     letter-spacing: 0.04em;
     white-space: nowrap;
   }
@@ -769,22 +772,28 @@
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    background: rgba(255, 255, 255, 0.07);
-    border: 0.5px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.55);
+    border: 0.5px solid rgba(255, 255, 255, 0.80);
     border-radius: 24px;
     padding: 0.7rem 1rem;
-    box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.1);
-    transition: border-color 0.2s;
+    box-shadow:
+      inset 0 0.5px 0 rgba(255,255,255,0.95),
+      0 1px 4px rgba(0,0,0,0.07);
+    transition: border-color 0.2s, background 0.2s;
   }
 
   .input-wrap:focus-within {
-    border-color: rgba(255, 255, 255, 0.28);
-    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow:
+      inset 0 0.5px 0 rgba(255,255,255,1),
+      0 0 0 2.5px rgba(10, 100, 220, 0.15),
+      0 1px 4px rgba(0,0,0,0.07);
   }
 
   .input-icon {
     font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.25);
+    color: rgba(40, 28, 12, 0.30);
     flex-shrink: 0;
   }
 
@@ -796,11 +805,10 @@
     font-family: inherit;
     font-size: 0.82rem;
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.88);
-    placeholder-color: rgba(255, 255, 255, 0.3);
+    color: rgba(30, 20, 8, 0.85);
   }
 
-  .chat-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+  .chat-input::placeholder { color: rgba(40, 28, 12, 0.30); }
   .chat-input:disabled { opacity: 0.5; }
 
   .send-btn {
@@ -837,23 +845,23 @@
     align-items: center;
     gap: 0.3rem;
     padding: 0.32rem 0.8rem;
-    background: rgba(255, 255, 255, 0.09);
-    border: 0.5px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.52);
+    border: 0.5px solid rgba(255, 255, 255, 0.75);
     border-radius: 50px;
     font-family: inherit;
     font-size: 0.58rem;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(30, 20, 8, 0.62);
     cursor: pointer;
     text-decoration: none;
-    box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.1);
+    box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.90), 0 1px 3px rgba(0,0,0,0.06);
     transition: background 0.18s, color 0.18s;
     white-space: nowrap;
   }
 
-  .ctx-pill:hover { background: rgba(255,255,255,0.16); color: rgba(255,255,255,0.88); }
+  .ctx-pill:hover { background: rgba(255,255,255,0.75); color: rgba(30,20,8,0.85); }
   .ctx-pill-static { cursor: default; }
-  .ctx-pill-static:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.6); }
+  .ctx-pill-static:hover { background: rgba(255,255,255,0.52); color: rgba(30,20,8,0.62); }
 
   .ctx-dot {
     width: 5px;
@@ -873,7 +881,7 @@
   .win-disclaimer {
     text-align: center;
     font-size: 0.48rem;
-    color: rgba(255, 255, 255, 0.18);
+    color: rgba(40, 28, 12, 0.28);
     letter-spacing: 0.08em;
     padding: 0 1rem 0.75rem;
     flex-shrink: 0;
