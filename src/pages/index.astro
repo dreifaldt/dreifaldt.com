@@ -2,12 +2,10 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import '../styles/global.css'
 import Hero from '../components/Hero.svelte'
-import Guide from '../components/Guide.svelte'
+
+export const prerender = true
 ---
 
-<BaseLayout title="dreifaldt.com">
-  <main class="min-h-screen bg-gray-950 text-white">
-    <Hero client:load />
-    <Guide />
-  </main>
+<BaseLayout title="Erik Dreifaldt — Software Engineer & Consultant">
+  <Hero client:load />
 </BaseLayout>
