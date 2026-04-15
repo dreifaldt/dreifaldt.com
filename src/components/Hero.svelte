@@ -3,13 +3,13 @@
 
   // ── SUGGESTION CHIPS ────────────────────────────────────────────────────────
   const suggestions = [
-    { emoji: '🏗️', label: 'Full-Stack?',   q: 'What full-stack technologies does Erik work with?' },
-    { emoji: '📱', label: 'iOS / Swift?',  q: "What's Erik's mobile development experience?" },
-    { emoji: '🤖', label: 'AI & Agents?',  q: 'What AI and LLM experience does Erik have?' },
-    { emoji: '⚡', label: 'Systems?',      q: 'Tell me about Erik\'s systems and infrastructure experience' },
-    { emoji: '💼', label: 'Consulting?',   q: 'How does Erik\'s consulting engagement work?' },
-    { emoji: '🌍', label: 'Available?',    q: 'Is Erik available for hire right now and what are his terms?' },
-    { emoji: '⭐', label: 'Why Erik?',     q: 'Give me your best pitch — why should I hire Erik Dreifaldt?' },
+    { emoji: '🏗️', label: 'Full-Stack',   q: 'What full-stack technologies does Erik work with?' },
+    { emoji: '📱', label: 'iOS / Swift',  q: "What's Erik's mobile development experience?" },
+    { emoji: '🤖', label: 'AI & Agents',  q: 'What AI and LLM experience does Erik have?' },
+    { emoji: '⚡', label: 'Systems',      q: 'Tell me about Erik\'s systems and infrastructure experience' },
+    { emoji: '💼', label: 'Consulting',   q: 'How does Erik\'s consulting engagement work?' },
+    { emoji: '🌍', label: 'Available',    q: 'Is Erik available for hire right now and what are his terms?' },
+    { emoji: '⭐', label: 'Why Erik',     q: 'Give me your best pitch — why should I hire Erik Dreifaldt?' },
   ]
 
   // ── CHAT STATE ──────────────────────────────────────────────────────────────
@@ -700,12 +700,9 @@
   .chips-row {
     display: flex;
     gap: 0.8rem;
-    overflow-x: auto;
-    padding-bottom: 0.25rem;
-    scrollbar-width: none;
+    /* No overflow clipping — lets scale(1.08) breathe */
+    padding: 8px 2px;
   }
-
-  .chips-row::-webkit-scrollbar { display: none; }
 
   /* ── CHIP ───────────────────────────────────────────────── */
   .chip {
