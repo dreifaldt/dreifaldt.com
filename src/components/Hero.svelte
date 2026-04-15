@@ -1,986 +1,965 @@
 <script lang="ts">
   import HeroBackground from './HeroBackground.svelte'
 
-  // ── ROTATING TAGLINES ──────────────────────────────────────────────────────
-  const taglines = [
-    'I BUILD THINGS THAT LAST.',
-    'I SHIP BEFORE DEADLINES.',
-    'I WRITE TESTS. SOMETIMES.',
-    'YES, I READ THE DOCS.',
-    'I DON\'T BREAK PROD. MUCH.',
-    'HIRE ME OR REGRET IT.',
+  // ── SUGGESTION CHIPS ────────────────────────────────────────────────────────
+  const suggestions = [
+    { emoji: '🏗️', label: 'Full-Stack?',   q: 'What full-stack technologies does Erik work with?' },
+    { emoji: '📱', label: 'iOS / Swift?',  q: "What's Erik's mobile development experience?" },
+    { emoji: '🤖', label: 'AI & Agents?',  q: 'What AI and LLM experience does Erik have?' },
+    { emoji: '⚡', label: 'Systems?',      q: 'Tell me about Erik\'s systems and infrastructure experience' },
+    { emoji: '💼', label: 'Consulting?',   q: 'How does Erik\'s consulting engagement work?' },
+    { emoji: '🌍', label: 'Available?',    q: 'Is Erik available for hire right now and what are his terms?' },
+    { emoji: '⭐', label: 'Why Erik?',     q: 'Give me your best pitch — why should I hire Erik Dreifaldt?' },
   ]
-  let tagIdx = $state(0)
-  let tagVisible = $state(true)
 
-  $effect(() => {
-    const iv = setInterval(() => {
-      tagVisible = false
-      setTimeout(() => {
-        tagIdx = (tagIdx + 1) % taglines.length
-        tagVisible = true
-      }, 280)
-    }, 2600)
-    return () => clearInterval(iv)
-  })
+  // ── CHAT STATE ──────────────────────────────────────────────────────────────
+  type ChatMsg = { role: 'user' | 'ai'; text: string }
 
-  // ── SKILL CARDS ────────────────────────────────────────────────────────────
-  type Card = {
-    num: string
-    label: string
-    sub: string
-    items: string[]
-    x: string
-    y: string
-    fd: string
-    tone: number
+  let messages = $state<ChatMsg[]>([])
+  let inputText = $state('')
+  let orbState = $state<'idle' | 'thinking' | 'done'>('idle')
+  let currentReply = $state('')
+  let inputEl = $state<HTMLInputElement | undefined>()
+
+  async function ask(question: string) {
+    if (orbState === 'thinking' || !question.trim()) return
+
+    const q = question.trim()
+    inputText = ''
+    orbState = 'thinking'
+    currentReply = ''
+    messages = [...messages, { role: 'user', text: q }]
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ message: q }),
+      })
+      const data = (await res.json()) as { reply: string }
+      currentReply = data.reply ?? ''
+      messages = [...messages, { role: 'ai', text: currentReply }]
+      orbState = 'done'
+      playTone(440, 0.4, 0.05)
+    } catch {
+      currentReply = 'Something went sideways — but Erik is real. Email erik@dreifaldt.com!'
+      messages = [...messages, { role: 'ai', text: currentReply }]
+      orbState = 'done'
+    }
+
+    // Reset to idle after response is read
+    setTimeout(() => {
+      if (orbState === 'done') orbState = 'idle'
+    }, 12000)
   }
 
-  const cards: Card[] = [
-    {
-      num: '01',
-      label: 'FULL-STACK',
-      sub: 'Web · Backend · APIs',
-      items: ['TypeScript', 'Python', 'Svelte', 'Astro', 'Node.js'],
-      x: '54%',
-      y: '17%',
-      fd: '0s',
-      tone: 261,
-    },
-    {
-      num: '02',
-      label: 'MOBILE',
-      sub: 'iOS · watchOS',
-      items: ['Swift', 'SwiftUI', 'iOS', 'watchOS'],
-      x: '72%',
-      y: '30%',
-      fd: '0.7s',
-      tone: 330,
-    },
-    {
-      num: '03',
-      label: 'SYSTEMS',
-      sub: 'Infra · Data · Events',
-      items: ['Kafka', 'Docker', 'PostgreSQL', 'Event-driven arch'],
-      x: '60%',
-      y: '56%',
-      fd: '1.4s',
-      tone: 392,
-    },
-    {
-      num: '04',
-      label: 'CONSULTING',
-      sub: 'Dreifaldt Consulting AB',
-      items: ['Embedded in teams', 'End-to-end delivery', '[Add your clients]'],
-      x: '40%',
-      y: '44%',
-      fd: '0.4s',
-      tone: 440,
-    },
-    {
-      num: '05',
-      label: 'AI / LLMs',
-      sub: 'Agents · Automation',
-      items: ['Claude', 'Agent systems', 'Workflow design', 'Prompt engineering'],
-      x: '76%',
-      y: '65%',
-      fd: '1.1s',
-      tone: 523,
-    },
-  ]
+  function onSuggestion(q: string) {
+    ask(q)
+    inputEl?.focus()
+  }
 
-  let activeCard = $state<string | null>(null)
-  let discovered = $state<string[]>([])
-  let allFound = $state(false)
-  let allFoundMsg = $state(false)
+  function onKey(e: KeyboardEvent) {
+    if (e.key === 'Enter') ask(inputText)
+  }
 
-  // Per-card 3D tilt
-  let tilts = $state<Record<string, { rx: number; ry: number }>>({})
+  // ── PING (Kafka) ─────────────────────────────────────────────────────────────
+  let pingState = $state<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
-  function onCardEnter(c: Card) {
-    activeCard = c.num
-    if (!discovered.includes(c.num)) {
-      discovered = [...discovered, c.num]
-      playTone(c.tone)
-      if (discovered.length + 1 === cards.length) {
-        // will be updated next tick; handle in $effect
-      }
+  async function ping() {
+    if (pingState !== 'idle') return
+    pingState = 'sending'
+    playChord([261, 330, 392, 523])
+    try {
+      const res = await fetch('/api/ping', { method: 'POST' })
+      const d = (await res.json()) as { ok: boolean }
+      pingState = d.ok ? 'sent' : 'error'
+    } catch {
+      pingState = 'error'
+    }
+    if (pingState === 'error') {
+      setTimeout(() => {
+        window.location.href = 'mailto:erik@dreifaldt.com?subject=Let%27s%20talk'
+        pingState = 'idle'
+      }, 1000)
     }
   }
 
-  function onCardMove(e: MouseEvent, num: string) {
-    const el = e.currentTarget as HTMLElement
-    const r = el.getBoundingClientRect()
-    const x = (e.clientX - r.left) / r.width - 0.5
-    const y = (e.clientY - r.top) / r.height - 0.5
-    tilts[num] = { rx: y * -20, ry: x * 20 }
-  }
+  const hireLabel = $derived(
+    pingState === 'idle'    ? 'Hire Erik'
+    : pingState === 'sending' ? '···'
+    : pingState === 'sent'    ? 'Sent ✓'
+    : 'Email →',
+  )
 
-  function onCardLeave(num: string) {
-    activeCard = null
-    tilts[num] = { rx: 0, ry: 0 }
-  }
-
-  $effect(() => {
-    if (discovered.length === cards.length && !allFound) {
-      allFound = true
-      setTimeout(() => {
-        playChord([261, 330, 392, 523, 659])
-        allFoundMsg = true
-        setTimeout(() => {
-          allFoundMsg = false
-        }, 3200)
-      }, 200)
-    }
-  })
-
-  // ── WEB AUDIO ──────────────────────────────────────────────────────────────
+  // ── AUDIO ───────────────────────────────────────────────────────────────────
   function playTone(freq: number, dur = 0.35, vol = 0.07) {
     try {
       const ctx = new AudioContext()
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.frequency.value = freq
-      osc.type = 'sine'
+      osc.connect(gain); gain.connect(ctx.destination)
+      osc.frequency.value = freq; osc.type = 'sine'
       gain.gain.setValueAtTime(vol, ctx.currentTime)
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur)
-      osc.start()
-      osc.stop(ctx.currentTime + dur)
-    } catch {
-      // no audio context — fine
-    }
+      osc.start(); osc.stop(ctx.currentTime + dur)
+    } catch { /* no audio */ }
   }
 
   function playChord(freqs: number[]) {
     freqs.forEach((f, i) => setTimeout(() => playTone(f, 0.5, 0.06), i * 55))
   }
 
-  // ── PING + PARTICLES ───────────────────────────────────────────────────────
-  type Particle = { id: number; x: number; y: number; dx: number; dy: number }
-  type PingState = 'idle' | 'sending' | 'sent' | 'error'
-
-  let pingState = $state<PingState>('idle')
-  let particles = $state<Particle[]>([])
-  let screenFlash = $state(false)
-
-  async function ping(e: MouseEvent) {
-    if (pingState !== 'idle') return
-    pingState = 'sending'
-
-    // particles burst from button center
-    const btn = e.currentTarget as HTMLElement
-    const r = btn.getBoundingClientRect()
-    const cx = r.left + r.width / 2
-    const cy = r.top + r.height / 2
-    particles = Array.from({ length: 28 }, (_, i) => {
-      const angle = (i / 28) * Math.PI * 2
-      const dist = 50 + Math.random() * 80
-      return {
-        id: Date.now() + i,
-        x: cx,
-        y: cy,
-        dx: Math.cos(angle) * dist,
-        dy: Math.sin(angle) * dist,
-      }
-    })
-    screenFlash = true
-    setTimeout(() => {
-      screenFlash = false
-      particles = []
-    }, 700)
-
-    playChord([261, 330, 392, 523])
-
-    try {
-      const res = await fetch('/api/ping', { method: 'POST' })
-      const data = (await res.json()) as { ok: boolean }
-      pingState = data.ok ? 'sent' : 'error'
-    } catch {
-      pingState = 'error'
-    }
-
-    if (pingState === 'error') {
-      setTimeout(() => {
-        window.location.href = 'mailto:erik@dreifaldt.com?subject=Let%27s%20talk'
-        pingState = 'idle'
-      }, 1200)
-    }
-  }
-
-  const pingLabel = $derived(
-    pingState === 'idle'
-      ? 'PING ME →'
-      : pingState === 'sending'
-        ? 'SENDING...'
-        : pingState === 'sent'
-          ? '👁  THEY KNOW'
-          : 'EMAIL ME →',
-  )
-
-  // ── CUSTOM CURSOR ──────────────────────────────────────────────────────────
-  let cx = $state(-100)
-  let cy = $state(-100)
-  let cursorOnCard = $state(false)
-
-  $effect(() => {
-    const mv = (e: MouseEvent) => {
-      cx = e.clientX
-      cy = e.clientY
-    }
-    window.addEventListener('mousemove', mv)
-    return () => window.removeEventListener('mousemove', mv)
-  })
-
-  // ── EASTER EGG: type "hire" ────────────────────────────────────────────────
-  let buf = ''
+  // ── EASTER EGG: type "hire" ──────────────────────────────────────────────────
+  let keyBuf = ''
   let eggActive = $state(false)
 
   $effect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      buf = (buf + e.key.toLowerCase()).slice(-8)
-      if (buf.includes('hire')) {
-        buf = ''
+    const h = (e: KeyboardEvent) => {
+      keyBuf = (keyBuf + e.key.toLowerCase()).slice(-8)
+      if (keyBuf.includes('hire')) {
+        keyBuf = ''
         eggActive = true
         playChord([523, 659, 784, 1047])
-        setTimeout(() => {
-          eggActive = false
-        }, 2800)
+        setTimeout(() => { eggActive = false }, 2800)
       }
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
   })
-
-  function cardTiltStyle(num: string, active: boolean): string {
-    const t = tilts[num]
-    if (!t || !active) return ''
-    return `transform: translate(-50%, -50%) perspective(500px) rotateX(${t.rx}deg) rotateY(${t.ry}deg) scale(1.08);`
-  }
 </script>
 
-<!-- ── CUSTOM CURSOR ────────────────────────────────────────────────────────── -->
-<div
-  class="cursor"
-  class:cursor-card={cursorOnCard}
-  style="left:{cx}px; top:{cy}px"
-></div>
-
-<!-- ── SCREEN FLASH ─────────────────────────────────────────────────────────── -->
-{#if screenFlash}
-  <div class="screen-flash"></div>
-{/if}
-
-<!-- ── PARTICLES ────────────────────────────────────────────────────────────── -->
-{#each particles as p (p.id)}
-  <div
-    class="particle"
-    style="left:{p.x}px; top:{p.y}px; --dx:{p.dx}px; --dy:{p.dy}px"
-  ></div>
-{/each}
-
-<!-- ── EASTER EGG OVERLAY ────────────────────────────────────────────────────── -->
-{#if eggActive}
-  <div class="egg-overlay">
-    <p class="egg-text">SMART.</p>
-    <p class="egg-sub">NOW DO SOMETHING ABOUT IT.</p>
-  </div>
-{/if}
-
-<!-- ── ALL-FOUND OVERLAY ─────────────────────────────────────────────────────── -->
-{#if allFoundMsg}
-  <div class="egg-overlay">
-    <p class="egg-text">NICE.</p>
-    <p class="egg-sub">NOW HIRE HIM.</p>
-  </div>
-{/if}
-
-<!-- ── MAIN SCENE ────────────────────────────────────────────────────────────── -->
-<div class="scene" class:scene-egg={eggActive || allFoundMsg}>
+<!-- ══════════════════════════════════════════════════════════════════════════
+     DESKTOP SCENE
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="scene">
+  <!-- Wood-panel room passthrough -->
   <HeroBackground />
 
-  <!-- NAV -->
-  <nav class="nav">
-    <span class="nav-name">ERIK DREIFALDT</span>
-    <span class="nav-counter">
-      SKILLS FOUND
-      <span class="counter-val" class:counter-done={allFound}>
-        {discovered.length}/{cards.length}
-      </span>
-    </span>
-  </nav>
-
-  <!-- FLOATING SKILL CARDS -->
-  {#each cards as card}
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div
-      class="card"
-      class:card-on={activeCard === card.num}
-      class:card-found={discovered.includes(card.num)}
-      style="
-        --cx: {card.x};
-        --cy: {card.y};
-        --fd: {card.fd};
-        {cardTiltStyle(card.num, activeCard === card.num)}
-      "
-      onmouseenter={() => { onCardEnter(card); cursorOnCard = true }}
-      onmousemove={(e) => onCardMove(e, card.num)}
-      onmouseleave={() => { onCardLeave(card.num); cursorOnCard = false }}
-    >
-      <div class="card-head">
-        <span class="card-num">{card.num}</span>
-        <span class="card-label">{card.label}</span>
-        {#if discovered.includes(card.num)}
-          <span class="card-check">✓</span>
-        {/if}
-      </div>
-      <p class="card-sub">{card.sub}</p>
-      <div class="card-items">
-        {#each card.items as item, i}
-          <span class="card-item" style="--di: {i * 40}ms">{item}</span>
-        {/each}
-      </div>
+  <!-- Easter egg flash -->
+  {#if eggActive}
+    <div class="egg-toast">
+      <p class="egg-big">SMART.</p>
+      <p class="egg-small">NOW DO SOMETHING ABOUT IT.</p>
     </div>
-  {/each}
+  {/if}
 
-  <!-- HEADLINE + CONTROLS -->
-  <div class="headline-block">
-    <p class="eyebrow">↓ SOFTWARE ENGINEER & CONSULTANT</p>
+  <!-- ── THE MAIN visionOS WINDOW ──────────────────────────────────────────── -->
+  <div class="vision-window">
 
-    <h1 class="headline" class:tag-out={!tagVisible} class:tag-in={tagVisible}>
-      {taglines[tagIdx]}
-    </h1>
+    <!-- Window specular edge highlight (top) -->
+    <div class="win-specular"></div>
 
-    <div class="cta-row">
-      <button
-        class="ping-btn"
-        class:btn-sending={pingState === 'sending'}
-        class:btn-sent={pingState === 'sent'}
-        class:btn-error={pingState === 'error'}
-        disabled={pingState !== 'idle'}
-        onclick={ping}
-        onmouseenter={() => (cursorOnCard = true)}
-        onmouseleave={() => (cursorOnCard = false)}
-      >
-        {pingLabel}
-      </button>
+    <!-- ── TOP CHROME BAR ───────────────────────────────────────────────── -->
+    <div class="win-topbar">
       <a
-        class="txt-link"
+        class="topbar-pill"
         href="https://www.linkedin.com/in/erik-dreifaldt"
         target="_blank"
         rel="noopener noreferrer"
-      >LINKEDIN ↗</a>
-      <a class="txt-link" href="mailto:erik@dreifaldt.com">EMAIL ↗</a>
+      >LinkedIn ↗</a>
+
+      <span class="topbar-title">ERIK DREIFALDT</span>
+
+      <button
+        class="topbar-pill topbar-pill-cta"
+        class:pill-sent={pingState === 'sent'}
+        onclick={ping}
+        disabled={pingState === 'sending' || pingState === 'sent'}
+      >{hireLabel}</button>
     </div>
 
-    <p class="ping-note">
-      Real Kafka message → my local stream. I'll see it.
-      <span class="egg-hint">try typing "hire"</span>
+    <!-- ── ORB AREA ─────────────────────────────────────────────────────── -->
+    <div class="orb-area">
+
+      <!-- The glowing orb -->
+      <div class="orb-wrap" class:orb-thinking={orbState === 'thinking'} class:orb-done={orbState === 'done'}>
+        <!-- Rotating iridescent halo ring (behind the sphere) -->
+        <div class="orb-halo"></div>
+        <!-- Dark glass sphere -->
+        <div class="orb-sphere">
+          <div class="orb-gloss"></div>
+          <!-- Response text floats inside the orb when available -->
+          {#if currentReply && orbState !== 'thinking'}
+            <div class="orb-reply">
+              <p class="reply-text">{currentReply}</p>
+            </div>
+          {:else if orbState === 'thinking'}
+            <div class="orb-thinking-indicator">
+              <span class="think-dot"></span>
+              <span class="think-dot"></span>
+              <span class="think-dot"></span>
+            </div>
+          {:else if messages.length === 0}
+            <div class="orb-idle-text">
+              <p class="idle-eyebrow">↓ ASK ME ANYTHING</p>
+              <p class="idle-headline">I BUILD<br />THINGS<br />THAT LAST.</p>
+            </div>
+          {/if}
+        </div>
+      </div>
+
+      <!-- Identity label below orb -->
+      <div class="orb-identity">
+        <div class="identity-avatar">ED</div>
+        <div class="identity-info">
+          <span class="identity-name">Erik Dreifaldt</span>
+          <span class="identity-role">Software Engineer & Consultant · Stockholm</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SUGGESTIONS ───────────────────────────────────────────────────── -->
+    <div class="suggestions">
+      <div class="suggestions-header">
+        <span class="sug-title">Suggestions</span>
+        <a class="sug-more" href="mailto:erik@dreifaldt.com">Contact directly ↗</a>
+      </div>
+      <div class="chips-row">
+        {#each suggestions as s}
+          <button class="chip" onclick={() => onSuggestion(s.q)}>
+            <span class="chip-icon">{s.emoji}</span>
+            <span class="chip-label">{s.label}</span>
+          </button>
+        {/each}
+      </div>
+    </div>
+
+    <!-- ── INPUT BAR ─────────────────────────────────────────────────────── -->
+    <div class="input-bar">
+      <div class="input-wrap">
+        <span class="input-icon">◎</span>
+        <input
+          bind:this={inputEl}
+          bind:value={inputText}
+          class="chat-input"
+          placeholder="Ask about Erik's experience…"
+          onkeydown={onKey}
+          disabled={orbState === 'thinking'}
+          autocomplete="off"
+          spellcheck="false"
+        />
+        {#if inputText.trim()}
+          <button class="send-btn" onclick={() => ask(inputText)} disabled={orbState === 'thinking'}>↑</button>
+        {/if}
+      </div>
+
+      <div class="input-pills">
+        <button class="ctx-pill" onclick={ping} disabled={pingState !== 'idle'}>
+          <span class="ctx-dot"></span>
+          Erik Dreifaldt
+        </button>
+        <span class="ctx-pill ctx-pill-static">
+          💼 Available now
+        </span>
+        <a class="ctx-pill" href="mailto:erik@dreifaldt.com">+ Email</a>
+      </div>
+    </div>
+
+    <!-- Beta disclaimer (matches visionOS style) -->
+    <p class="win-disclaimer">
+      Powered by Claude · Real Kafka ping on "Hire Erik" · Type <em>hire</em> anywhere
     </p>
-  </div>
 
-  <!-- BOTTOM BAR -->
-  <footer class="bar">
-    <span>DREIFALDT CONSULTING AB</span>
-    <span class="dot">·</span>
-    <span>SWEDEN</span>
-    <span class="dot">·</span>
-    <span class="bar-hint">HOVER THE CARDS →</span>
-    <span class="dot">·</span>
-    <a href="mailto:erik@dreifaldt.com">ERIK@DREIFALDT.COM</a>
-  </footer>
-</div>
+  </div><!-- /vision-window -->
+</div><!-- /scene -->
 
-<!-- ── MOBILE ────────────────────────────────────────────────────────────────── -->
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MOBILE
+═══════════════════════════════════════════════════════════════════════════ -->
 <div class="mob">
   <HeroBackground />
-  <nav class="nav">
-    <span class="nav-name">ERIK DREIFALDT</span>
-    <span class="nav-meta">
-      <span class="live-dot"></span>OPEN
-    </span>
-  </nav>
-  <div class="mob-body">
-    <p class="eyebrow">↓ SOFTWARE ENGINEER & CONSULTANT</p>
-    <h1 class="headline mob-h1">I BUILD<br />THINGS<br />THAT LAST.</h1>
-    <div class="mob-cards">
-      {#each cards as card}
-        <div class="mob-card">
-          <div class="card-head">
-            <span class="card-num">{card.num}</span>
-            <span class="card-label">{card.label}</span>
-          </div>
-          <div class="mob-items">
-            {#each card.items as item}
-              <span class="mob-item">{item}</span>
-            {/each}
-          </div>
+  <div class="mob-inner">
+    <div class="mob-header">
+      <span class="topbar-title" style="font-size:0.62rem">ERIK DREIFALDT</span>
+      <button class="topbar-pill topbar-pill-cta" onclick={ping}>{hireLabel}</button>
+    </div>
+
+    <div class="mob-orb-wrap">
+      <div class="orb-wrap" class:orb-thinking={orbState === 'thinking'} class:orb-done={orbState === 'done'} style="width:min(72vw,320px);height:min(72vw,320px)">
+        <div class="orb-halo"></div>
+        <div class="orb-sphere">
+          <div class="orb-gloss"></div>
+          {#if currentReply && orbState !== 'thinking'}
+            <div class="orb-reply"><p class="reply-text" style="font-size:0.75rem">{currentReply}</p></div>
+          {:else if orbState === 'thinking'}
+            <div class="orb-thinking-indicator">
+              <span class="think-dot"></span><span class="think-dot"></span><span class="think-dot"></span>
+            </div>
+          {:else}
+            <div class="orb-idle-text">
+              <p class="idle-eyebrow" style="font-size:0.42rem">↓ ASK ME ANYTHING</p>
+              <p class="idle-headline" style="font-size:clamp(1.4rem,8vw,2rem)">I BUILD<br/>THINGS<br/>THAT LAST.</p>
+            </div>
+          {/if}
         </div>
+      </div>
+    </div>
+
+    <div class="mob-chips">
+      {#each suggestions.slice(0, 4) as s}
+        <button class="chip" onclick={() => onSuggestion(s.q)}>
+          <span class="chip-icon">{s.emoji}</span>
+          <span class="chip-label">{s.label}</span>
+        </button>
       {/each}
     </div>
-    <div class="cta-row">
-      <button
-        class="ping-btn"
-        class:btn-sent={pingState === 'sent'}
-        disabled={pingState !== 'idle'}
-        onclick={ping}
-      >{pingLabel}</button>
-      <a class="txt-link" href="https://www.linkedin.com/in/erik-dreifaldt" target="_blank" rel="noopener noreferrer">LINKEDIN ↗</a>
+
+    <div class="input-bar mob-input-bar">
+      <div class="input-wrap">
+        <span class="input-icon">◎</span>
+        <input
+          bind:value={inputText}
+          class="chat-input"
+          placeholder="Ask about Erik…"
+          onkeydown={onKey}
+          disabled={orbState === 'thinking'}
+        />
+        {#if inputText.trim()}
+          <button class="send-btn" onclick={() => ask(inputText)}>↑</button>
+        {/if}
+      </div>
     </div>
   </div>
 </div>
 
 <style>
-  /* ── GLOBAL ────────────────────────────────────────────────── */
-  :global(body) {
-    cursor: none;
-  }
-
-  /* ── CURSOR ────────────────────────────────────────────────── */
-  .cursor {
-    position: fixed;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #c8f000;
-    pointer-events: none;
-    z-index: 9999;
-    transform: translate(-50%, -50%);
-    transition:
-      width 0.15s ease,
-      height 0.15s ease,
-      opacity 0.15s ease;
-    mix-blend-mode: difference;
-  }
-
-  .cursor-card {
-    width: 36px;
-    height: 36px;
-    background: rgba(200, 240, 0, 0.15);
-    border: 1px solid #c8f000;
-  }
-
-  /* ── SCREEN FLASH ──────────────────────────────────────────── */
-  .screen-flash {
-    position: fixed;
-    inset: 0;
-    background: #c8f000;
-    pointer-events: none;
-    z-index: 8000;
-    animation: flash 0.5s ease-out forwards;
-  }
-
-  @keyframes flash {
-    0% {
-      opacity: 0.45;
-    }
-    100% {
-      opacity: 0;
-    }
-  }
-
-  /* ── PARTICLES ─────────────────────────────────────────────── */
-  .particle {
-    position: fixed;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #c8f000;
-    pointer-events: none;
-    z-index: 7999;
-    transform: translate(-50%, -50%);
-    animation: pout 0.7s ease-out forwards;
-  }
-
-  @keyframes pout {
-    0% {
-      transform: translate(-50%, -50%) translate(0, 0) scale(1);
-      opacity: 1;
-    }
-    100% {
-      transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(0);
-      opacity: 0;
-    }
-  }
-
-  /* ── EASTER EGG / ALL-FOUND OVERLAY ───────────────────────── */
-  .egg-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 7900;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: rgba(200, 240, 0, 0.06);
-    pointer-events: none;
-    animation: egg-in 0.3s ease-out;
-  }
-
-  @keyframes egg-in {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  .egg-text {
-    font-family: 'Barlow', sans-serif;
-    font-size: clamp(4rem, 12vw, 10rem);
-    font-weight: 900;
-    color: #c8f000;
-    letter-spacing: -0.02em;
-    line-height: 1;
-  }
-
-  .egg-sub {
-    font-size: 0.8rem;
-    font-weight: 800;
-    letter-spacing: 0.25em;
-    color: rgba(200, 240, 0, 0.7);
-    margin-top: 0.75rem;
-  }
-
-  /* ── SCENE ─────────────────────────────────────────────────── */
+  /* ══════════════════════════════════════════════════════════
+     SCENE + WINDOW SHELL
+  ═══════════════════════════════════════════════════════════ */
   .scene {
     position: relative;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background: #080a12;
-    transition: filter 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  .scene-egg {
-    filter: brightness(0.6);
+  @media (max-width: 768px) { .scene { display: none; } }
+
+  /* The main floating visionOS window */
+  .vision-window {
+    position: relative;
+    z-index: 10;
+    width: min(92vw, 820px);
+    height: min(94vh, 880px);
+    display: flex;
+    flex-direction: column;
+
+    background: rgba(22, 18, 12, 0.72);
+    backdrop-filter: blur(44px) saturate(160%);
+    -webkit-backdrop-filter: blur(44px) saturate(160%);
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 42px;
+    overflow: hidden;
+
+    box-shadow:
+      inset 0 0.5px 0 rgba(255, 255, 255, 0.18),
+      0 2px 8px rgba(0, 0, 0, 0.25),
+      0 32px 80px rgba(0, 0, 0, 0.55),
+      0 80px 160px rgba(0, 0, 0, 0.35);
   }
 
-  @media (max-width: 768px) {
-    .scene {
-      display: none;
-    }
+  /* Rainbow shimmer on bottom edge (like visionOS window glow) */
+  .vision-window::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5px;
+    left: 25%;
+    right: 25%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(100, 120, 255, 0.3),
+      rgba(200, 80, 255, 0.3),
+      rgba(255, 120, 60, 0.3),
+      transparent
+    );
   }
 
-  /* ── NAV ───────────────────────────────────────────────────── */
-  .nav {
+  .win-specular {
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    z-index: 30;
+    left: 15%;
+    right: 15%;
+    height: 0.5px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.3) 30%,
+      rgba(255, 255, 255, 0.3) 70%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     TOP CHROME BAR
+  ═══════════════════════════════════════════════════════════ */
+  .win-topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.75rem 2.5rem;
+    padding: 1.1rem 1.5rem 0.9rem;
+    flex-shrink: 0;
   }
 
-  .nav-name {
-    font-size: 0.72rem;
-    font-weight: 800;
+  .topbar-title {
+    font-size: 0.64rem;
+    font-weight: 600;
     letter-spacing: 0.22em;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.75);
+    flex: 1;
+    text-align: center;
   }
 
-  .nav-counter {
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    color: rgba(255, 255, 255, 0.3);
-    display: flex;
+  .topbar-pill {
+    padding: 0.42rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 0.5px solid rgba(255, 255, 255, 0.18);
+    border-radius: 50px;
+    color: rgba(255, 255, 255, 0.7);
+    font-family: inherit;
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    min-width: 80px;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.12);
   }
 
-  .counter-val {
-    color: rgba(200, 240, 0, 0.5);
-    transition: color 0.3s ease;
+  .topbar-pill:hover { background: rgba(255, 255, 255, 0.16); color: rgba(255,255,255,0.9); }
+
+  .topbar-pill-cta {
+    background: rgba(10, 132, 255, 0.85);
+    border-color: rgba(100, 180, 255, 0.3);
+    color: rgba(255, 255, 255, 0.97);
+    box-shadow:
+      inset 0 0.5px 0 rgba(255, 255, 255, 0.28),
+      0 4px 16px rgba(10, 132, 255, 0.4);
   }
 
-  .counter-done {
-    color: #c8f000;
+  .topbar-pill-cta:hover:not(:disabled) {
+    background: rgba(10, 132, 255, 1);
+    box-shadow:
+      inset 0 0.5px 0 rgba(255, 255, 255, 0.3),
+      0 6px 24px rgba(10, 132, 255, 0.55);
   }
 
-  .nav-meta {
+  .topbar-pill-cta:disabled { opacity: 0.7; cursor: default; }
+  .pill-sent { background: rgba(52, 211, 153, 0.25) !important; border-color: rgba(52,211,153,0.4) !important; }
+
+  /* ══════════════════════════════════════════════════════════
+     ORB AREA
+  ═══════════════════════════════════════════════════════════ */
+  .orb-area {
+    flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    color: rgba(255, 255, 255, 0.35);
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    min-height: 0;
+    gap: 1rem;
   }
 
-  .live-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #c8f000;
-    animation: blink 2s ease-in-out infinite;
+  /* ── ORB WRAPPER + HALO ──────────────────────────────────── */
+  .orb-wrap {
+    position: relative;
+    width: min(46vmin, 340px);
+    height: min(46vmin, 340px);
+    flex-shrink: 0;
   }
 
-  @keyframes blink {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.25;
-    }
-  }
-
-  /* ── SKILL CARDS ───────────────────────────────────────────── */
-  .card {
+  /* The iridescent rotating halo ring */
+  .orb-halo {
     position: absolute;
-    left: var(--cx);
-    top: var(--cy);
-    transform: translate(-50%, -50%);
-    z-index: 20;
-    padding: 1rem 1.25rem;
-    background: rgba(8, 10, 18, 0.78);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 10px;
-    backdrop-filter: blur(14px);
-    min-width: 140px;
-    transition:
-      border-color 0.2s ease,
-      box-shadow 0.2s ease,
-      background 0.2s ease;
-    animation: float var(--fd) 4s ease-in-out infinite;
-    animation-delay: var(--fd);
+    inset: -6%;
+    border-radius: 50%;
+    background: conic-gradient(
+      from 195deg at 48% 52%,
+      #2244cc,
+      #5a28b8,
+      #9a2090,
+      #c83848,
+      #d86028,
+      #d09020,
+      #c04868,
+      #8030a8,
+      #4040d0,
+      #2244cc
+    );
+    filter: blur(22px);
+    opacity: 0.82;
+    animation: halo-spin 14s linear infinite;
     will-change: transform;
   }
 
-  .card-found {
-    border-color: rgba(200, 240, 0, 0.18);
+  .orb-thinking .orb-halo {
+    animation: halo-spin 3.5s linear infinite;
+    opacity: 1;
+    filter: blur(18px);
   }
 
-  .card-on {
-    border-color: rgba(200, 240, 0, 0.6) !important;
-    background: rgba(8, 10, 18, 0.97) !important;
-    box-shadow:
-      0 0 0 1px rgba(200, 240, 0, 0.2),
-      0 12px 40px rgba(200, 240, 0, 0.12),
-      0 0 60px rgba(200, 240, 0, 0.05);
-    animation-play-state: paused;
-    z-index: 25;
+  .orb-done .orb-halo {
+    animation: halo-spin 10s linear infinite;
+    opacity: 0.95;
   }
 
-  @keyframes float {
-    0%,
-    100% {
-      transform: translate(-50%, -50%) translateY(0);
-    }
-    50% {
-      transform: translate(-50%, -50%) translateY(-10px);
-    }
+  @keyframes halo-spin {
+    to { transform: rotate(360deg); }
   }
 
-  .card-head {
+  /* The dark glass sphere */
+  .orb-sphere {
+    position: absolute;
+    inset: 5%;
+    border-radius: 50%;
+    overflow: hidden;
     display: flex;
     align-items: center;
-    gap: 0.45rem;
-    margin-bottom: 0.3rem;
+    justify-content: center;
+
+    background: radial-gradient(
+      circle at 38% 32%,
+      rgba(80, 65, 130, 0.55) 0%,
+      rgba(18, 14, 40, 0.94) 50%,
+      rgba(6, 4, 18, 0.99) 100%
+    );
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      inset 0 0 50px rgba(60, 80, 180, 0.12),
+      inset 0 -15px 50px rgba(160, 50, 80, 0.08);
   }
 
-  .card-num {
-    font-size: 0.55rem;
+  /* Subtle top-left gloss */
+  .orb-gloss {
+    position: absolute;
+    top: 10%;
+    left: 16%;
+    width: 28%;
+    height: 18%;
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse,
+      rgba(255, 255, 255, 0.07) 0%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  /* ── CONTENT INSIDE ORB ──────────────────────────────────── */
+  .orb-reply {
+    position: absolute;
+    inset: 12%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    animation: fade-up 0.5s ease-out;
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .reply-text {
+    font-size: 0.82rem;
+    font-weight: 400;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.01em;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+  }
+
+  .orb-thinking-indicator {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .think-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    animation: dot-pulse 1.4s ease-in-out infinite;
+  }
+
+  .think-dot:nth-child(2) { animation-delay: 0.2s; }
+  .think-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes dot-pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.85); }
+    50%       { opacity: 1;   transform: scale(1.15); }
+  }
+
+  .orb-idle-text {
+    text-align: center;
+    padding: 0 14%;
+    animation: fade-up 0.6s ease-out;
+  }
+
+  .idle-eyebrow {
+    font-size: 0.48rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 0.5rem;
+  }
+
+  .idle-headline {
+    font-family: 'Barlow', sans-serif;
+    font-size: clamp(1.5rem, 4vmin, 2.4rem);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  /* ── IDENTITY LABEL ──────────────────────────────────────── */
+  .orb-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .identity-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5a40c0, #c04080);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.58rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
-    color: #c8f000;
+    color: white;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
   }
 
-  .card-label {
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    color: #fff;
-  }
-
-  .card-check {
-    font-size: 0.55rem;
-    color: #c8f000;
-    margin-left: auto;
-  }
-
-  .card-sub {
-    font-size: 0.57rem;
-    letter-spacing: 0.08em;
-    color: rgba(255, 255, 255, 0.28);
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.22s ease, margin-bottom 0.22s ease;
-  }
-
-  .card-on .card-sub {
-    max-height: 2rem;
-    margin-bottom: 0.65rem;
-  }
-
-  .card-items {
+  .identity-info {
     display: flex;
     flex-direction: column;
-    gap: 0.22rem;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
+    gap: 0.15rem;
   }
 
-  .card-on .card-items {
-    max-height: 200px;
-  }
-
-  .card-item {
+  .identity-name {
     font-size: 0.68rem;
-    letter-spacing: 0.06em;
-    color: rgba(255, 255, 255, 0.5);
-    animation: none;
-    opacity: 0;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.82);
+    letter-spacing: 0.04em;
   }
 
-  .card-on .card-item {
-    animation: item-in 0.25s ease-out var(--di, 0ms) forwards;
-  }
-
-  @keyframes item-in {
-    from {
-      opacity: 0;
-      transform: translateX(-6px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  /* ── HEADLINE BLOCK ────────────────────────────────────────── */
-  .headline-block {
-    position: absolute;
-    bottom: 4.5rem;
-    left: 2.5rem;
-    z-index: 20;
-    max-width: 44%;
-  }
-
-  .eyebrow {
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    color: #c8f000;
-    margin-bottom: 0.875rem;
-  }
-
-  .headline {
-    font-family: 'Barlow', sans-serif;
-    font-size: clamp(2.8rem, 6.5vw, 5.5rem);
-    font-weight: 900;
-    line-height: 0.93;
-    letter-spacing: -0.02em;
-    color: #fff;
-    margin-bottom: 2rem;
-    transition:
-      opacity 0.28s ease,
-      transform 0.28s ease;
-  }
-
-  .tag-out {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  .tag-in {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .cta-row {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    margin-bottom: 0.875rem;
-  }
-
-  .ping-btn {
-    padding: 0.82rem 1.75rem;
-    background: #c8f000;
-    color: #080a12;
-    font-family: 'Barlow', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.18em;
-    border: none;
-    border-radius: 5px;
-    cursor: none;
-    transition: all 0.18s ease;
-  }
-
-  .ping-btn:hover:not(:disabled) {
-    background: #d8ff00;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(200, 240, 0, 0.35);
-  }
-
-  .ping-btn:disabled {
-    cursor: default;
-  }
-
-  .btn-sending {
-    background: transparent !important;
-    border: 1px solid #c8f000;
-    color: #c8f000 !important;
-    animation: pulse-b 1s ease-in-out infinite;
-  }
-
-  .btn-sent {
-    background: rgba(200, 240, 0, 0.08) !important;
-    border: 1px solid rgba(200, 240, 0, 0.4);
-    color: #c8f000 !important;
-    transform: none !important;
-    box-shadow: none !important;
-  }
-
-  .btn-error {
-    background: rgba(248, 113, 113, 0.1) !important;
-    border: 1px solid #f87171;
-    color: #f87171 !important;
-  }
-
-  @keyframes pulse-b {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.45;
-    }
-  }
-
-  .txt-link {
-    font-size: 0.63rem;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    color: rgba(255, 255, 255, 0.3);
-    text-decoration: none;
-    transition: color 0.18s;
-  }
-
-  .txt-link:hover {
-    color: #fff;
-  }
-
-  .ping-note {
-    font-size: 0.58rem;
+  .identity-role {
+    font-size: 0.54rem;
+    color: rgba(255, 255, 255, 0.32);
     letter-spacing: 0.05em;
-    color: rgba(255, 255, 255, 0.18);
-    line-height: 1.6;
   }
 
-  .egg-hint {
-    margin-left: 0.75rem;
-    color: rgba(200, 240, 0, 0.2);
-    font-style: italic;
+  /* ══════════════════════════════════════════════════════════
+     SUGGESTIONS
+  ═══════════════════════════════════════════════════════════ */
+  .suggestions {
+    padding: 0 1.5rem 0.5rem;
+    flex-shrink: 0;
   }
 
-  /* ── BOTTOM BAR ────────────────────────────────────────────── */
-  .bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 30;
+  .suggestions-header {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
-    padding: 0.9rem 2.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    font-size: 0.58rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    color: rgba(255, 255, 255, 0.2);
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
   }
 
-  .bar a {
-    color: rgba(255, 255, 255, 0.2);
+  .sug-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+    letter-spacing: 0.04em;
+  }
+
+  .sug-more {
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: rgba(10, 132, 255, 0.85);
     text-decoration: none;
-    transition: color 0.2s;
+    letter-spacing: 0.04em;
   }
 
-  .bar a:hover {
-    color: #c8f000;
+  .chips-row {
+    display: flex;
+    gap: 0.8rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: none;
   }
 
-  .bar-hint {
-    color: rgba(200, 240, 0, 0.25);
+  .chips-row::-webkit-scrollbar { display: none; }
+
+  /* ── CHIP ───────────────────────────────────────────────── */
+  .chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    flex-shrink: 0;
+    transition: transform 0.18s ease;
   }
 
-  .dot {
-    color: rgba(255, 255, 255, 0.08);
+  .chip:hover { transform: scale(1.08); }
+  .chip:active { transform: scale(0.96); }
+
+  .chip-icon {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow:
+      inset 0 0.5px 0 rgba(255,255,255,0.18),
+      0 4px 16px rgba(0,0,0,0.35);
+    transition: background 0.2s, box-shadow 0.2s;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 
-  /* ── MOBILE ────────────────────────────────────────────────── */
+  .chip:hover .chip-icon {
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow:
+      inset 0 0.5px 0 rgba(255,255,255,0.25),
+      0 6px 20px rgba(0,0,0,0.4);
+  }
+
+  .chip-label {
+    font-size: 0.56rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.58);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     INPUT BAR
+  ═══════════════════════════════════════════════════════════ */
+  .input-bar {
+    padding: 0.65rem 1.25rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    flex-shrink: 0;
+  }
+
+  .input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(255, 255, 255, 0.07);
+    border: 0.5px solid rgba(255, 255, 255, 0.14);
+    border-radius: 24px;
+    padding: 0.7rem 1rem;
+    box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.1);
+    transition: border-color 0.2s;
+  }
+
+  .input-wrap:focus-within {
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .input-icon {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.25);
+    flex-shrink: 0;
+  }
+
+  .chat-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.88);
+    placeholder-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .chat-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+  .chat-input:disabled { opacity: 0.5; }
+
+  .send-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(10, 132, 255, 0.9);
+    border: none;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(10,132,255,0.45);
+    transition: all 0.15s ease;
+  }
+
+  .send-btn:hover:not(:disabled) { background: rgba(10, 132, 255, 1); transform: scale(1.05); }
+  .send-btn:disabled { opacity: 0.5; cursor: default; }
+
+  /* Context pills below input */
+  .input-pills {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0 0.25rem;
+  }
+
+  .ctx-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.32rem 0.8rem;
+    background: rgba(255, 255, 255, 0.09);
+    border: 0.5px solid rgba(255, 255, 255, 0.14);
+    border-radius: 50px;
+    font-family: inherit;
+    font-size: 0.58rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.1);
+    transition: background 0.18s, color 0.18s;
+    white-space: nowrap;
+  }
+
+  .ctx-pill:hover { background: rgba(255,255,255,0.16); color: rgba(255,255,255,0.88); }
+  .ctx-pill-static { cursor: default; }
+  .ctx-pill-static:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.6); }
+
+  .ctx-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #34d399;
+    animation: blink 2.4s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.2; }
+  }
+
+  /* ── DISCLAIMER ─────────────────────────────────────────── */
+  .win-disclaimer {
+    text-align: center;
+    font-size: 0.48rem;
+    color: rgba(255, 255, 255, 0.18);
+    letter-spacing: 0.08em;
+    padding: 0 1rem 0.75rem;
+    flex-shrink: 0;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     EASTER EGG TOAST
+  ═══════════════════════════════════════════════════════════ */
+  .egg-toast {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(4px);
+    animation: fade-up 0.3s ease-out;
+  }
+
+  .egg-big {
+    font-family: 'Barlow', sans-serif;
+    font-size: clamp(4rem, 10vw, 8rem);
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .egg-small {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    color: rgba(255, 255, 255, 0.45);
+    margin-top: 0.5rem;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     MOBILE
+  ═══════════════════════════════════════════════════════════ */
   .mob {
     display: none;
     position: relative;
     min-height: 100vh;
-    background: #080a12;
+    overflow: hidden;
     flex-direction: column;
   }
 
   @media (max-width: 768px) {
-    .mob {
-      display: flex;
-    }
-
-    :global(body) {
-      cursor: auto;
-    }
-
-    .cursor {
-      display: none;
-    }
+    .mob { display: flex; }
   }
 
-  .mob-body {
+  .mob-inner {
     position: relative;
     z-index: 10;
     flex: 1;
-    padding: 1.5rem 1.5rem 2.5rem;
-  }
-
-  .mob-h1 {
-    font-size: clamp(2.8rem, 13vw, 4.5rem) !important;
-    margin-bottom: 2rem !important;
-  }
-
-  .mob-cards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.65rem;
-    margin-bottom: 2rem;
-  }
-
-  .mob-card {
-    padding: 0.875rem 1rem;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 8px;
-  }
-
-  .mob-items {
-    margin-top: 0.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    padding: 1rem;
+    gap: 1rem;
   }
 
-  .mob-item {
-    font-size: 0.65rem;
-    color: rgba(255, 255, 255, 0.45);
-    letter-spacing: 0.06em;
+  .mob-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mob-orb-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .mob-chips {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .mob-input-bar {
+    padding: 0 !important;
   }
 </style>

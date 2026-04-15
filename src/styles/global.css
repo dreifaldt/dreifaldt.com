@@ -9,9 +9,10 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  background: #080A12;
-  color: #fff;
-  font-family: 'Barlow', system-ui, sans-serif;
+  /* Warm sunlit room — the Three.js canvas fills this */
+  background: #f0e8d8;
+  color: rgba(255, 255, 255, 0.92);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

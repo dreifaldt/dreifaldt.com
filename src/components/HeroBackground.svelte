@@ -1,153 +1,104 @@
-<script lang="ts">
-  import * as THREE from 'three'
+<!-- Pure CSS wood-panel room — simulates visionOS passthrough of a warm physical space.
+     No Three.js needed; this is faster and looks more accurate to the screenshot. -->
+<div class="room">
+  <!-- Ribbed architectural wood panels wall -->
+  <div class="wall"></div>
+  <!-- Subtle floor plane -->
+  <div class="floor"></div>
+  <!-- Warm ambient light bloom from upper-right (window) -->
+  <div class="light-bloom"></div>
+  <!-- Soft left-wall shadow -->
+  <div class="left-shadow"></div>
+</div>
 
-  let container: HTMLDivElement | undefined = $state()
+<style>
+  .room {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
 
-  $effect(() => {
-    if (!container) return
+  /* ── MAIN WALL — ribbed vertical wood panels ─────────────── */
+  .wall {
+    position: absolute;
+    inset: 0;
 
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    /* Base warm amber wood tone */
+    background-color: #8b6432;
 
-    const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000)
-    camera.position.z = 300
+    /* Multiple layers:
+       1. Wood grain tone variation (horizontal gradient)
+       2. Ribbed panel shadow lines (repeating vertical)
+       3. Panel highlight shimmer (repeating vertical, offset) */
+    background-image:
+      /* Warm ambient gradient — darker at corners, lighter centre-top */
+      radial-gradient(ellipse 100% 80% at 60% 0%, rgba(200, 160, 80, 0.25) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 100% at 0% 50%, rgba(40, 20, 0, 0.25) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 100% at 100% 50%, rgba(40, 20, 0, 0.18) 0%, transparent 55%),
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    renderer.setSize(container.clientWidth, container.clientHeight)
-    container.appendChild(renderer.domElement)
+      /* Ribbed panel dividers — the key texture */
+      repeating-linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0)      0px,
+        rgba(0, 0, 0, 0)      16px,
+        rgba(0, 0, 0, 0.14)   16px,
+        rgba(0, 0, 0, 0.14)   17px,
+        rgba(255, 220, 120, 0.06) 17px,
+        rgba(255, 220, 120, 0.06) 18px,
+        rgba(0, 0, 0, 0)      18px
+      ),
 
-    const cols = 80
-    const rows = 50
-    const spacing = 20
-    const count = cols * rows
-    const positions = new Float32Array(count * 3)
-    const basePositions = new Float32Array(count * 3)
+      /* Subtle horizontal wood grain variation */
+      repeating-linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0)     0px,
+        rgba(0, 0, 0, 0.015) 3px,
+        rgba(0, 0, 0, 0)     6px
+      );
+  }
 
-    for (let i = 0; i < rows; i++) {
-      for (let j = 0; j < cols; j++) {
-        const idx = (i * cols + j) * 3
-        const x = (j - cols / 2) * spacing
-        const y = (i - rows / 2) * spacing
-        positions[idx] = x
-        positions[idx + 1] = y
-        positions[idx + 2] = 0
-        basePositions[idx] = x
-        basePositions[idx + 1] = y
-        basePositions[idx + 2] = 0
-      }
-    }
+  /* ── FLOOR — lighter warm strip at the bottom ───────────── */
+  .floor {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 18%;
+    background: linear-gradient(
+      180deg,
+      rgba(110, 80, 35, 0) 0%,
+      rgba(100, 75, 30, 0.55) 100%
+    );
+  }
 
-    const geometry = new THREE.BufferGeometry()
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+  /* ── WINDOW LIGHT BLOOM — warm sunlight from upper right ─── */
+  .light-bloom {
+    position: absolute;
+    top: -10%;
+    right: -5%;
+    width: 55%;
+    height: 65%;
+    background: radial-gradient(
+      ellipse at 80% 20%,
+      rgba(255, 220, 130, 0.22) 0%,
+      rgba(240, 180, 80, 0.08) 40%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
 
-    const vertexShader = `
-      uniform vec2 uMouse;
-      uniform float uInfluenceRadius;
-      uniform float uMaxDisplacement;
-      varying float vDisplacement;
-
-      void main() {
-        vec3 pos = position;
-        float dist = distance(pos.xy, uMouse);
-        float influence = exp(-dist * dist / (2.0 * uInfluenceRadius * uInfluenceRadius));
-        float displacement = influence * uMaxDisplacement;
-        pos.z += displacement;
-        vDisplacement = displacement;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-        gl_PointSize = mix(1.5, 3.0, influence);
-      }
-    `
-
-    const fragmentShader = `
-      varying float vDisplacement;
-      uniform float uMaxDisplacement;
-
-      void main() {
-        float t = clamp(vDisplacement / uMaxDisplacement, 0.0, 1.0);
-        float alpha = mix(0.15, 0.6, t);
-        vec3 color = vec3(0.133, 0.827, 0.933);
-        gl_FragColor = vec4(color, alpha);
-      }
-    `
-
-    const material = new THREE.ShaderMaterial({
-      uniforms: {
-        uMouse: { value: new THREE.Vector2(9999, 9999) },
-        uInfluenceRadius: { value: 150.0 },
-        uMaxDisplacement: { value: 15.0 },
-      },
-      vertexShader,
-      fragmentShader,
-      transparent: true,
-      depthWrite: false,
-    })
-
-    const points = new THREE.Points(geometry, material)
-    scene.add(points)
-
-    let mouseX = 9999
-    let mouseY = 9999
-
-    const onMouseMove = (e: MouseEvent) => {
-      if (reducedMotion) return
-      const rect = container!.getBoundingClientRect()
-      mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * cols * spacing
-      mouseY = -((e.clientY - rect.top) / rect.height - 0.5) * rows * spacing
-    }
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (reducedMotion || !e.touches[0]) return
-      const rect = container!.getBoundingClientRect()
-      mouseX = ((e.touches[0].clientX - rect.left) / rect.width - 0.5) * cols * spacing
-      mouseY = -((e.touches[0].clientY - rect.top) / rect.height - 0.5) * rows * spacing
-    }
-
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('touchmove', onTouchMove, { passive: true })
-
-    let rafId = 0
-
-    const animate = () => {
-      rafId = requestAnimationFrame(animate)
-      material.uniforms.uMouse.value.set(mouseX, mouseY)
-      renderer.render(scene, camera)
-    }
-
-    if (reducedMotion) {
-      material.uniforms.uMouse.value.set(9999, 9999)
-      renderer.render(scene, camera)
-    } else {
-      animate()
-    }
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect
-        if (width === 0 || height === 0) continue
-        camera.aspect = width / height
-        camera.updateProjectionMatrix()
-        renderer.setSize(width, height)
-        if (reducedMotion) {
-          renderer.render(scene, camera)
-        }
-      }
-    })
-    observer.observe(container)
-
-    return () => {
-      cancelAnimationFrame(rafId)
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('touchmove', onTouchMove)
-      observer.disconnect()
-      geometry.dispose()
-      material.dispose()
-      renderer.dispose()
-      if (container && renderer.domElement.parentNode === container) {
-        container.removeChild(renderer.domElement)
-      }
-    }
-  })
-</script>
-
-<div bind:this={container} class="absolute inset-0 pointer-events-none"></div>
+  /* ── LEFT SHADOW — suggests room depth ──────────────────── */
+  .left-shadow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      rgba(30, 15, 0, 0.28) 0%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+</style>
