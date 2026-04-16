@@ -20,6 +20,8 @@
   let orbState  = $state<'idle' | 'thinking' | 'done'>('idle')
   let currentReply = $state('')
   let inputEl = $state<HTMLInputElement | undefined>()
+  let inputFocused = $state(false)
+  let hoverPrompt  = $state('')
 
   async function ask(question: string) {
     if (orbState === 'thinking' || !question.trim()) return
@@ -123,11 +125,25 @@
   <div class="cards-layout">
 
     <!-- ── CARD LEFT: orb + chat ──────────────────────────────────────── -->
-    <div class="glass-card card-chat">
+    <div class="glass-card card-chat" style="position:relative">
 
-      <!-- Orb -->
-      <div class="orb-wrap" class:orb-thinking={orbState === 'thinking'} class:orb-done={orbState === 'done'}>
-        <div class="orb-halo"></div>
+      <!-- Flex spacer — shrinks when orb moves to corner -->
+      <div class="orb-spacer" class:spacer-min={inputFocused}></div>
+
+      <!-- Orb — absolutely positioned so it can glide to top-right -->
+      <div
+        class="orb-wrap"
+        class:orb-thinking={orbState === 'thinking'}
+        class:orb-done={orbState === 'done'}
+        class:orb-minimized={inputFocused}
+      >
+        <!-- Amorphic colour blobs — the "living" layer -->
+        <div class="orb-glow g1"></div>
+        <div class="orb-glow g2"></div>
+        <div class="orb-glow g3"></div>
+        <div class="orb-glow g4"></div>
+
+        <!-- Dark glass amoeba core -->
         <div class="orb-sphere">
           <div class="orb-gloss"></div>
           {#if currentReply && orbState !== 'thinking'}
@@ -142,8 +158,7 @@
             </div>
           {:else}
             <div class="orb-idle-text">
-              <p class="idle-eyebrow">ASK ME ANYTHING</p>
-              <p class="idle-headline">I BUILD<br/>THINGS<br/>THAT LAST.</p>
+              <p class="idle-headline">ASK ME<br/>ANYTHING</p>
             </div>
           {/if}
         </div>
@@ -165,8 +180,10 @@
           bind:this={inputEl}
           bind:value={inputText}
           class="chat-input"
-          placeholder="Ask about Erik's experience…"
+          placeholder={hoverPrompt || "Ask about Erik's experience…"}
           onkeydown={onKey}
+          onfocus={() => inputFocused = true}
+          onblur={() => { inputFocused = false; hoverPrompt = '' }}
           disabled={orbState === 'thinking'}
           autocomplete="off"
           spellcheck="false"
@@ -185,9 +202,8 @@
       <!-- Header -->
       <div class="about-header">
         <div>
-          <p class="about-eyebrow">Full-Stack · iOS · AI · Systems</p>
+          <p class="about-tagline">Speed in Startups. Scaled in Enterprise. Leveraged with AI.</p>
           <h1 class="about-name">Erik<br/>Dreifaldt</h1>
-          <p class="about-sub">5+ years · Stockholm · Remote-friendly</p>
         </div>
       </div>
 
@@ -196,7 +212,12 @@
         <p class="chips-label">Ask me about</p>
         <div class="chips-grid">
           {#each suggestions as s}
-            <button class="chip" onclick={() => onSuggestion(s.q)}>
+            <button
+              class="chip"
+              onclick={() => onSuggestion(s.q)}
+              onmouseenter={() => hoverPrompt = s.q}
+              onmouseleave={() => hoverPrompt = ''}
+            >
               <span class="chip-icon">{s.emoji}</span>
               <span class="chip-label">{s.label}</span>
             </button>
@@ -241,8 +262,11 @@
       </div>
 
       <div class="mob-orb">
-        <div class="orb-wrap" class:orb-thinking={orbState === 'thinking'} class:orb-done={orbState === 'done'} style="width:min(64vw,280px);height:min(64vw,280px)">
-          <div class="orb-halo"></div>
+        <div class="orb-wrap" class:orb-thinking={orbState === 'thinking'} class:orb-done={orbState === 'done'} class:orb-minimized={inputFocused} style="width:min(64vw,280px);height:min(64vw,280px)">
+          <div class="orb-glow g1"></div>
+          <div class="orb-glow g2"></div>
+          <div class="orb-glow g3"></div>
+          <div class="orb-glow g4"></div>
           <div class="orb-sphere">
             <div class="orb-gloss"></div>
             {#if currentReply && orbState !== 'thinking'}
@@ -253,8 +277,7 @@
               </div>
             {:else}
               <div class="orb-idle-text">
-                <p class="idle-eyebrow" style="font-size:0.4rem">ASK ME ANYTHING</p>
-                <p class="idle-headline" style="font-size:clamp(1.3rem,7vw,1.8rem)">I BUILD<br/>THINGS<br/>THAT LAST.</p>
+                <p class="idle-headline" style="font-size:clamp(1.3rem,7vw,1.8rem)">ASK ME<br/>ANYTHING</p>
               </div>
             {/if}
           </div>
@@ -276,6 +299,8 @@
           class="chat-input"
           placeholder="Ask about Erik…"
           onkeydown={onKey}
+          onfocus={() => inputFocused = true}
+          onblur={() => inputFocused = false}
           disabled={orbState === 'thinking'}
         />
         {#if inputText.trim()}
@@ -356,65 +381,197 @@
   }
 
   /* ═══════════════════════════════════════════════════════════
-     ORB
+     ORB — LIVING AMORPHIC BLOB
   ══════════════════════════════════════════════════════════ */
+
+  /* Spacer holds vertical space in the flex column while orb is absolute */
+  .orb-spacer {
+    flex-shrink: 0;
+    width: 100%;
+    height: min(52vmin, 260px);
+    transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                margin  0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .spacer-min {
+    height: 0;
+  }
+
   .orb-wrap {
-    position: relative;
+    /* Lifted out of flex flow so it can slide freely */
+    position: absolute;
     width: min(52vmin, 260px);
     height: min(52vmin, 260px);
-    flex-shrink: 0;
+    /* Normal: horizontally centred near top of card */
+    top: 1.75rem;
+    left: calc(50% - min(26vmin, 130px));
+    transition:
+      top     0.65s cubic-bezier(0.34, 1.1, 0.64, 1),
+      left    0.65s cubic-bezier(0.34, 1.1, 0.64, 1),
+      transform 0.65s cubic-bezier(0.34, 1.1, 0.64, 1),
+      opacity   0.5s ease;
+    will-change: transform, opacity, top, left;
   }
 
-  .orb-halo {
+  /* ── Slide to top-right corner when input focused ───────── */
+  .orb-minimized {
+    top: 0.75rem;
+    left: calc(100% - min(13vmin, 65px) - 0.9rem);
+    transform: scale(0.24) !important;
+    transform-origin: top left;
+    opacity: 0.72;
+  }
+
+  /* Glow layers freeze and dim when minimised */
+  .orb-minimized .orb-glow {
+    animation-play-state: paused;
+    opacity: 0.12 !important;
+    filter: blur(8px) grayscale(0.9) !important;
+    transition: opacity 0.4s, filter 0.4s;
+  }
+
+  /* ── Colour blob layers ──────────────────────────────────── */
+  .orb-glow {
     position: absolute;
-    inset: -6%;
-    border-radius: 50%;
-    background: conic-gradient(
-      from 195deg at 48% 52%,
-      #2244cc, #5a28b8, #9a2090, #c83848,
-      #d86028, #d09020, #c04868, #8030a8,
-      #4040d0, #2244cc
-    );
-    filter: blur(22px);
-    opacity: 0.85;
-    animation: halo-spin 14s linear infinite;
-    will-change: transform;
+    will-change: transform, border-radius;
   }
 
-  .orb-thinking .orb-halo { animation-duration: 3.5s; opacity: 1; filter: blur(18px); }
-  .orb-done .orb-halo     { animation-duration: 10s; opacity: 0.95; }
+  /* Deep indigo-blue — slow, large */
+  .g1 {
+    inset: -22%;
+    background: radial-gradient(ellipse at 50% 50%, #3b1fcc 0%, #6b28e0 45%, transparent 70%);
+    filter: blur(28px);
+    opacity: 0.72;
+    animation:
+      morph-a 9s ease-in-out infinite,
+      breathe-a 6s ease-in-out infinite,
+      spin-slow 22s linear infinite;
+  }
 
-  @keyframes halo-spin { to { transform: rotate(360deg); } }
+  /* Hot magenta-pink — medium speed */
+  .g2 {
+    inset: -14%;
+    background: radial-gradient(ellipse at 40% 60%, #c0186a 0%, #e0408a 40%, transparent 68%);
+    filter: blur(22px);
+    opacity: 0.65;
+    animation:
+      morph-b 7s ease-in-out infinite,
+      breathe-b 5s ease-in-out infinite,
+      spin-rev  17s linear infinite;
+  }
 
+  /* Amber-orange — medium, offset */
+  .g3 {
+    inset: -10%;
+    background: radial-gradient(ellipse at 65% 35%, #d05a10 0%, #e0900a 40%, transparent 66%);
+    filter: blur(20px);
+    opacity: 0.55;
+    animation:
+      morph-c 8s ease-in-out infinite,
+      breathe-c 7s ease-in-out infinite,
+      spin-slow 30s linear infinite reverse;
+  }
+
+  /* Teal-cyan accent — small, fast */
+  .g4 {
+    inset: -6%;
+    background: radial-gradient(ellipse at 30% 70%, #0e8a98 0%, #1ab8d0 35%, transparent 60%);
+    filter: blur(16px);
+    opacity: 0.45;
+    animation:
+      morph-a 5s ease-in-out infinite reverse,
+      breathe-a 4s ease-in-out infinite alternate;
+  }
+
+  /* ── Morphing border-radius animations ───────────────────── */
+  @keyframes morph-a {
+    0%   { border-radius: 62% 38% 46% 54% / 60% 44% 56% 40%; }
+    17%  { border-radius: 44% 56% 60% 40% / 46% 58% 42% 58%; }
+    33%  { border-radius: 55% 45% 38% 62% / 38% 62% 55% 45%; }
+    50%  { border-radius: 38% 62% 54% 46% / 56% 38% 62% 38%; }
+    67%  { border-radius: 58% 42% 48% 52% / 42% 56% 38% 62%; }
+    83%  { border-radius: 46% 54% 62% 38% / 60% 40% 48% 52%; }
+    100% { border-radius: 62% 38% 46% 54% / 60% 44% 56% 40%; }
+  }
+
+  @keyframes morph-b {
+    0%   { border-radius: 40% 60% 55% 45% / 52% 48% 60% 40%; }
+    20%  { border-radius: 62% 38% 40% 60% / 40% 60% 38% 62%; }
+    40%  { border-radius: 48% 52% 62% 38% / 58% 42% 50% 50%; }
+    60%  { border-radius: 56% 44% 46% 54% / 44% 56% 46% 54%; }
+    80%  { border-radius: 38% 62% 58% 42% / 62% 38% 56% 44%; }
+    100% { border-radius: 40% 60% 55% 45% / 52% 48% 60% 40%; }
+  }
+
+  @keyframes morph-c {
+    0%   { border-radius: 50% 50% 40% 60% / 45% 55% 50% 50%; }
+    25%  { border-radius: 38% 62% 56% 44% / 60% 40% 44% 56%; }
+    50%  { border-radius: 62% 38% 44% 56% / 38% 62% 60% 40%; }
+    75%  { border-radius: 44% 56% 62% 38% / 54% 46% 38% 62%; }
+    100% { border-radius: 50% 50% 40% 60% / 45% 55% 50% 50%; }
+  }
+
+  /* ── Breathe (scale pulse) ───────────────────────────────── */
+  @keyframes breathe-a {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.12); }
+  }
+  @keyframes breathe-b {
+    0%, 100% { transform: scale(1.05); }
+    50%       { transform: scale(0.92); }
+  }
+  @keyframes breathe-c {
+    0%, 100% { transform: scale(0.95); }
+    33%       { transform: scale(1.10); }
+    66%       { transform: scale(0.98); }
+  }
+
+  /* ── Rotation ────────────────────────────────────────────── */
+  @keyframes spin-slow { to { transform: rotate(360deg);  } }
+  @keyframes spin-rev  { to { transform: rotate(-360deg); } }
+
+  /* ── State modifiers ─────────────────────────────────────── */
+  /* Thinking: faster, brighter, more saturated */
+  .orb-thinking .g1 { animation-duration: 3s, 2s, 8s;  opacity: 0.92; filter: blur(24px) saturate(1.4); }
+  .orb-thinking .g2 { animation-duration: 2.5s, 1.8s, 6s; opacity: 0.88; }
+  .orb-thinking .g3 { animation-duration: 3.5s, 2.2s, 10s; opacity: 0.72; }
+  .orb-thinking .g4 { animation-duration: 2s,   1.5s; opacity: 0.60; }
+
+  /* Done: slower, settled */
+  .orb-done .g1 { animation-duration: 11s, 8s, 28s; opacity: 0.78; }
+  .orb-done .g2 { animation-duration: 9s,  6s, 21s; opacity: 0.68; }
+
+  /* ── Dark glass amoeba core ──────────────────────────────── */
   .orb-sphere {
     position: absolute;
-    inset: 5%;
-    border-radius: 50%;
+    inset: 8%;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
     background: radial-gradient(
       circle at 38% 32%,
-      rgba(80, 65, 130, 0.55) 0%,
-      rgba(18, 14, 40, 0.94) 50%,
-      rgba(6, 4, 18, 0.99) 100%
+      rgba(80, 65, 130, 0.60) 0%,
+      rgba(18, 14, 40, 0.92) 50%,
+      rgba(6, 4, 18, 0.98) 100%
     );
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
     box-shadow:
-      inset 0 0 50px rgba(60, 80, 180, 0.12),
-      inset 0 -15px 50px rgba(160, 50, 80, 0.08);
+      inset 0 0 60px rgba(60, 80, 180, 0.15),
+      inset 0 -20px 60px rgba(160, 50, 80, 0.10);
+    /* The sphere also morphs — slower, subtler */
+    animation: morph-b 12s ease-in-out infinite;
   }
 
   .orb-gloss {
     position: absolute;
     top: 10%; left: 16%;
-    width: 28%; height: 18%;
+    width: 32%; height: 20%;
     border-radius: 50%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.07) 0%, transparent 100%);
+    background: radial-gradient(ellipse, rgba(255,255,255,0.09) 0%, transparent 100%);
     pointer-events: none;
   }
 
+  /* ── Content inside orb ──────────────────────────────────── */
   .orb-reply {
     position: absolute;
     inset: 12%;
@@ -548,10 +705,10 @@
   ══════════════════════════════════════════════════════════ */
   .about-header { flex-shrink: 0; }
 
-  .about-eyebrow {
-    font-size: 0.56rem; font-weight: 600; letter-spacing: 0.18em;
-    color: rgba(10, 6, 2, 0.38); text-transform: uppercase; display: block;
-    margin-bottom: 0.5rem;
+  .about-tagline {
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em;
+    color: rgba(10, 6, 2, 0.52); display: block;
+    margin-bottom: 0.6rem; line-height: 1.45;
   }
 
   .about-name {
@@ -563,10 +720,6 @@
     margin-bottom: 0.6rem;
   }
 
-  .about-sub {
-    font-size: 0.62rem; color: rgba(10, 6, 2, 0.42);
-    letter-spacing: 0.06em; font-weight: 500;
-  }
 
   /* ── CHIPS ── */
   .chips-section { flex: 1; display: flex; flex-direction: column; gap: 0.6rem; }
