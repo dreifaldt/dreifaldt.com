@@ -4,3 +4,9 @@ dist/
 .DS_Store
 .env
 .env.*
+
+# 3D pipeline outputs
+tools/3d/build/
+tools/3d/renders/
+tools/3d/linkedin/
+__pycache__/

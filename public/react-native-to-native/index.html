@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/x-icon" href="/triangle-32.ico">
+<title>React Native to native in 2026: a field guide · Erik Dreifaldt</title>
+<meta name="description" content="When to move a React Native app to Swift and Kotlin, how to do it with coding agents without a risky rewrite, and how to keep every user signed in. Lessons from Shopify, Intuit and Airbnb.">
+<link rel="canonical" href="https://dreifaldt.com/react-native-to-native/">
+<meta name="author" content="Erik Dreifaldt">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Erik Dreifaldt">
+<meta property="og:title" content="React Native to native in 2026: a field guide">
+<meta property="og:description" content="Shopify rebuilt Shop in Swift and Kotlin in 12 weeks. When it makes sense for your app, and how to migrate without losing users.">
+<meta property="og:url" content="https://dreifaldt.com/react-native-to-native/">
+<meta property="og:image" content="https://dreifaldt.com/og/rn-to-native.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="article:published_time" content="2026-11-13">
+<meta property="article:author" content="https://www.linkedin.com/in/erik-dreifaldt/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="React Native to native in 2026: a field guide">
+<meta name="twitter:description" content="When to move a React Native app to Swift and Kotlin, and how to do it with coding agents without losing users.">
+<meta name="twitter:image" content="https://dreifaldt.com/og/rn-to-native.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": "https://dreifaldt.com/#erik",
+      "name": "Erik Dreifaldt",
+      "url": "https://dreifaldt.com/",
+      "jobTitle": "AI-native developer",
+      "worksFor": { "@type": "Organization", "name": "Dreifaldt Consulting" },
+      "address": { "@type": "PostalAddress", "addressLocality": "Stockholm", "addressCountry": "SE" },
+      "sameAs": ["https://www.linkedin.com/in/erik-dreifaldt/"],
+      "knowsAbout": ["React Native", "React Native New Architecture", "JSI", "Turbo Modules", "Expo", "Swift", "SwiftUI", "Kotlin", "Jetpack Compose", "AI coding agents", "Model Context Protocol"]
+    },
+    {
+      "@type": "TechArticle",
+      "headline": "React Native to native in 2026: a field guide",
+      "description": "When to move a React Native app to Swift and Kotlin, how to do it with coding agents without a risky rewrite, and how to keep every user signed in.",
+      "datePublished": "2026-11-13",
+      "dateModified": "2026-11-13",
+      "author": { "@id": "https://dreifaldt.com/#erik" },
+      "publisher": { "@id": "https://dreifaldt.com/#erik" },
+      "image": "https://dreifaldt.com/og/rn-to-native.jpg",
+      "mainEntityOfPage": "https://dreifaldt.com/react-native-to-native/",
+      "about": ["React Native", "Swift", "Kotlin", "Mobile app migration"]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Is React Native dead?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. React Native now runs only on its New Architecture and is actively developed. Shopify, which is leaving it, still calls it an excellent framework and says its React Native apps are fast. What changed is the cost of the alternative: coding agents make two native codebases much cheaper to build and keep in parity." } },
+        { "@type": "Question", "name": "How long does a React Native to native migration take?",
+          "acceptedAnswer": { "@type": "Answer", "text": "It depends on screen count and native surface area. Shopify's Shop app went from a one-week proof of concept to published native apps on both stores in about 12 weeks, with a core group of six engineers and coding agents." } },
+        { "@type": "Question", "name": "Should we rebuild from scratch or migrate screen by screen?",
+          "acceptedAnswer": { "@type": "Answer", "text": "With coding agents, a parallel rebuild that uses the React Native app as the reference is now the faster default for most apps. Screen-by-screen brownfield migration still makes sense for very large apps whose releases cannot pause, but hybrid apps carry their own costs, as Airbnb and Intuit found." } },
+        { "@type": "Question", "name": "What do you lose when leaving React Native?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Mainly over-the-air JavaScript updates and a single shared UI codebase. Fixes go through App Store and Google Play review, so feature flags and staged rollouts become more important." } },
+        { "@type": "Question", "name": "Is Kotlin Multiplatform an alternative?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes, if you want to share business logic without JavaScript. Kotlin Multiplatform shares logic between Android and iOS, and Compose Multiplatform for iOS has been stable since May 2025 if you also want shared UI." } }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  /* Same world as the homepage: black page, Apple-grey surfaces, LinkedIn blue for actions. Reading column + sticky contents rail. */
+  --bg:#000;
+  --surface:#161617;
+  --surface-2:#1d1d1f;
+  --line:#2c2c2e;
+  --text:#f5f5f7;
+  --muted:#86868b;
+  --soft:#d2d2d7;
+  --link:#2997ff;
+  --action:#0a66c2;
+  --heat:#ff9f0a;
+  --good:#30d158;
+  --font:"Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:19px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--link);outline-offset:3px;border-radius:6px}
+h1,h2,h3{text-wrap:balance;letter-spacing:-.022em;margin:0}
+p{margin:0}
+.nav{position:sticky;top:0;z-index:50;height:52px;display:flex;align-items:center;gap:24px;padding:0 max(22px,calc((100vw - 1180px)/2));background:rgba(22,22,23,.78);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(255,255,255,.08)}
+.nav .brand{font-weight:600;font-size:19px;color:var(--text);margin-right:auto}
+.nav .brand:hover{text-decoration:none}
+.nav .links{display:flex;gap:22px}
+.nav .links a{color:var(--soft);font-size:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:980px;font-weight:600;white-space:nowrap;font-family:var(--font)}
+.btn:hover{text-decoration:none;filter:brightness(1.12)}
+.btn-sm{font-size:13px;padding:6px 14px}
+.btn-lg{font-size:17px;padding:12px 24px}
+.btn-action{background:var(--action);color:#fff}
+.btn-ghost{color:var(--text);box-shadow:inset 0 0 0 1px rgba(245,245,247,.45)}
+
+header.hero{max-width:1180px;margin:0 auto;padding:88px 24px 40px;display:grid;gap:22px}
+.eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--heat)}
+h1{font-size:clamp(42px,6.4vw,84px);line-height:1.02;font-weight:700;max-width:16ch}
+h1 .arrow{background:linear-gradient(100deg,#64d2ff,#2997ff 50%,#0a66c2);-webkit-background-clip:text;background-clip:text;color:transparent}
+.dek{font-size:clamp(20px,2vw,25px);color:var(--soft);max-width:44ch;line-height:1.4}
+.byline{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:15px;flex-wrap:wrap}
+.byline .av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;background:#2c2c2e;box-shadow:0 0 0 2px var(--heat)}
+.byline b{color:var(--text);font-weight:600}
+.hero-img{max-width:1180px;margin:0 auto;padding:0 24px}
+.hero-img img{width:100%;height:auto;display:block;border-radius:24px;background:#05070b}
+
+.layout{max-width:1180px;margin:0 auto;padding:56px 24px 40px;display:grid;grid-template-columns:220px minmax(0,680px);gap:72px;justify-content:center}
+.toc{position:sticky;top:84px;align-self:start;font-size:14px}
+.toc b{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:12px}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:9px;counter-reset:t}
+.toc a{color:var(--soft)}
+.toc a:hover{color:var(--text)}
+.toc .cta{margin-top:26px;display:grid;gap:10px}
+article{min-width:0}
+article > * + *{margin-top:22px}
+article h2{font-size:clamp(30px,3.4vw,40px);line-height:1.1;margin-top:72px;font-weight:700}
+article h3{font-size:22px;margin-top:40px}
+article p,article li{color:#e8e8ed}
+article strong{color:var(--text)}
+.tldr{background:var(--surface-2);border-radius:20px;padding:26px 28px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.tldr b.k{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;display:block;margin-bottom:10px}
+.tldr ul{margin:0;padding-left:20px;display:grid;gap:8px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.stat{background:var(--surface-2);border-radius:18px;padding:20px 18px}
+.stat .n{font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.stat .l{color:var(--muted);font-size:14px;margin-top:8px;line-height:1.35}
+table{width:100%;border-collapse:collapse;font-size:16px;font-variant-numeric:tabular-nums}
+.table-wrap{overflow-x:auto;background:var(--surface-2);border-radius:18px;padding:6px 18px}
+th,td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+td.win{color:var(--good)}
+.cap{font-size:14px;color:var(--muted)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:var(--surface-2);border-radius:20px;padding:24px 24px 26px}
+.card h3{margin:0 0 12px;font-size:20px}
+.card ul{margin:0;padding-left:20px;display:grid;gap:9px;font-size:17px}
+.card.go{box-shadow:inset 0 3px 0 var(--good)}
+.card.stay{box-shadow:inset 0 3px 0 var(--heat)}
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:14px;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:44px 1fr;gap:14px;background:var(--surface-2);border-radius:18px;padding:20px 22px}
+.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--mono);color:var(--heat);font-size:15px;padding-top:3px}
+.steps b{display:block;color:var(--text);margin-bottom:4px}
+.steps p{font-size:17px}
+.check{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.check li{display:grid;grid-template-columns:28px 1fr;gap:10px;font-size:17px}
+.check li::before{content:"";width:18px;height:18px;margin-top:5px;border-radius:5px;box-shadow:inset 0 0 0 1.5px var(--soft)}
+.pull{font-size:clamp(24px,2.6vw,30px);line-height:1.3;font-weight:600;letter-spacing:-.015em;border-left:3px solid var(--action);padding:4px 0 4px 22px;color:var(--text)}
+details{background:var(--surface-2);border-radius:16px;padding:16px 22px}
+details + details{margin-top:10px}
+summary{cursor:pointer;font-weight:600;font-size:18px}
+details p{margin-top:10px;font-size:17px}
+.cta-card{margin-top:72px;border-radius:28px;padding:40px 36px;background:radial-gradient(120% 140% at 90% 0%,#64d2ff2e,transparent 55%),linear-gradient(130deg,#0a66c2,#06325f 70%,#03203d)}
+.cta-card h2{margin:0;font-size:clamp(30px,3.6vw,42px)}
+.cta-card p{color:#e1ecf8;margin-top:14px;max-width:46ch}
+.cta-card .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.cta-card .btn-white{background:#fff;color:#0a2540}
+.cta-card .btn-line{color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.6)}
+.sources{font-size:15px;color:var(--muted)}
+.sources ol{padding-left:20px;display:grid;gap:6px}
+.sources a{word-break:break-word}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;padding:28px 24px 44px;max-width:1180px;margin:56px auto 0;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+@media (max-width:960px){
+  .layout{grid-template-columns:1fr;gap:0}
+  .toc{display:none}
+  .nav .links{display:none}
+  .split,.stats{grid-template-columns:1fr}
+  body{font-size:18px}
+}
+</style>
+</head>
+<body>
+<nav class="nav" aria-label="Main">
+  <a class="brand" href="../">Erik Dreifaldt</a>
+  <div class="links">
+    <a href="../#backend">Backend</a>
+    <a href="../#chips">Chips</a>
+    <a href="../#app">App</a>
+    <a href="./">React Native → native</a>
+  </div>
+  <a class="btn btn-action btn-sm" href="https://www.linkedin.com/in/erik-dreifaldt/" rel="noopener">Connect</a>
+</nav>
+
+<header class="hero">
+  <div class="eyebrow">Field guide · Mobile</div>
+  <h1>React Native <span class="arrow">→ native</span> in 2026</h1>
+  <p class="dek">Shopify rebuilt its Shop app in Swift and Kotlin in about 12 weeks. Here is how to tell whether your app should follow, and how to move without losing a single signed-in user.</p>
+  <div class="byline"><span class="av" aria-hidden="true">ED</span><span><b>Erik Dreifaldt</b> · AI-native developer, Stockholm</span><span>13 November 2026 · 10 min read</span></div>
+</header>
+<div class="hero-img"><img src="hero.jpg" width="1200" height="630" alt="A phone taken apart into layers: screen, Fabric view tree, Hermes engine, JSI lattice, Turbo Modules, native board and chassis."></div>
+
+<div class="layout">
+  <aside class="toc" aria-label="Contents">
+    <b>Contents</b>
+    <ol>
+      <li><a href="#what-changed">What changed</a></li>
+      <li><a href="#should-you">Should you leave?</a></li>
+      <li><a href="#rebuild-or-migrate">Rebuild or migrate?</a></li>
+      <li><a href="#playbook">The agent playbook</a></li>
+      <li><a href="#continuity">Keep every user</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ol>
+    <div class="cta">
+      <a class="btn btn-action btn-sm" href="https://www.linkedin.com/in/erik-dreifaldt/" rel="noopener">Talk to Erik</a>
+      <a class="btn btn-ghost btn-sm" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fdreifaldt.com%2Freact-native-to-native%2F" rel="noopener">Share on LinkedIn</a>
+    </div>
+  </aside>
+
+  <article>
+    <div class="tldr">
+      <b class="k">The short version</b>
+      <ul>
+        <li>Coding agents have made two native codebases far cheaper to build and keep in sync. That is the real news, not that React Native got worse.</li>
+        <li>Leave if you need platform features first, your team is mostly native engineers, or a big React Native upgrade is coming anyway. Stay if you live on over-the-air updates or your app already performs well.</li>
+        <li>The default plan is now a parallel rebuild that uses your React Native app as the specification, ported in small reviewed checkpoints.</li>
+        <li>Plan continuity before code: sessions, push, analytics events and deep links must survive the switch.</li>
+      </ul>
+    </div>
+
+    <h2 id="what-changed">What changed in 2026</h2>
+    <p>On 10 September 2026 Shopify announced it is moving its mobile apps from React Native back to Swift and Kotlin <a href="#s1">[1]</a>. It was not a breakup. Shopify still calls React Native an excellent framework, says it was the right call in 2020, and states plainly that its React Native apps are fast <a href="#s1">[1]</a>.</p>
+    <p>The reason is economics. Coding models got good enough by late 2025 that agents could build a feature on one platform using the other platform's version as a reference. Maintaining two platforms is still real work, but no longer the deciding factor <a href="#s1">[1]</a>.</p>
+    <p>The first app through the door was Shop. A single engineer spent one week on a SwiftUI proof of concept. About 12 weeks later both native apps were in the stores, built by a core group of six with feature teams joining midway <a href="#s2">[2]</a>.</p>
+    <div class="stats" aria-label="Shop app after going native">
+      <div class="stat"><div class="n">50%</div><div class="l">faster cold start on Android</div></div>
+      <div class="stat"><div class="n">~10×</div><div class="l">fewer crashing sessions</div></div>
+      <div class="stat"><div class="n">12 wk</div><div class="l">proof of concept to both stores</div></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Shop app</th><th>React Native</th><th>Native</th></tr></thead>
+        <tbody>
+          <tr><td>Cold start, iOS</td><td>3200 ms</td><td class="win">2466 ms</td></tr>
+          <tr><td>Cold start, Android</td><td>4433 ms</td><td class="win">2233 ms</td></tr>
+          <tr><td>Session stability</td><td>99.5%+</td><td class="win">99.95%+</td></tr>
+          <tr><td>App size, Android</td><td>293 MB</td><td class="win">184 MB</td></tr>
+          <tr><td>App size, iOS</td><td>67 MB</td><td>68 MB</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cap">Figures as published by Shopify Engineering <a href="#s2">[2]</a>. One app, one team: treat them as a data point, not a promise.</p>
+    <p>Shopify's main app is next. It has more than 300 screens plus widgets, an Apple Watch app, complications and Siri Shortcuts, and is due to ship native later in 2026 <a href="#s1">[1]</a>.</p>
+
+    <h2 id="should-you">Should your app leave React Native?</h2>
+    <p>Shopify's reasons are Shopify's. Airbnb said the same thing when it left in 2018: its experience might not apply to your team <a href="#s4">[4]</a>. Here are the signals I look for.</p>
+    <div class="split">
+      <div class="card go">
+        <h3>Signals to go native</h3>
+        <ul>
+          <li>Your roadmap is full of platform features: widgets, Live Activities, watch apps, on-device AI, deep camera or health integrations.</li>
+          <li>Most of your mobile engineers already think in Swift and Kotlin.</li>
+          <li>You are still on React Native's legacy architecture. Since 0.82 there is no way to switch the New Architecture off <a href="#s6">[6]</a>, so you face a large migration either way. Shop's move coincided with its planned New Architecture adoption, which would have meant revisiting native modules and rendering anyway <a href="#s2">[2]</a>.</li>
+          <li>Upgrades, dependency churn and bridging code eat a noticeable share of every sprint.</li>
+          <li>Startup time, list performance or crash rate is a business problem, not a curiosity.</li>
+        </ul>
+      </div>
+      <div class="card stay">
+        <h3>Reasons to stay</h3>
+        <ul>
+          <li>You rely on over-the-air updates to ship fixes the same day. Native fixes go through store review, a trade-off developers raised when Shopify announced the move <a href="#s8">[8]</a>.</li>
+          <li>Your team is mostly React and web engineers, and the mobile app shares a lot with a web product.</li>
+          <li>The app is mainly content and forms, and it already feels fast.</li>
+          <li>You have no budget for a parallel build this year. A half-finished migration is worse than none.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="pull">React Native did not get worse. Writing the same feature twice got cheaper.</p>
+
+    <h2 id="rebuild-or-migrate">Rebuild in parallel, or migrate screen by screen?</h2>
+    <p>For years the safe answer was brownfield: put a native shell around the app and replace React Native screens one at a time. The tooling for that is good. React Native documents how to embed it in existing apps, and Expo SDK 55 added an isolated workflow that packages a React Native app as an AAR or XCFramework for a native host <a href="#s7">[7]</a>.</p>
+    <p>But hybrid apps have a cost of their own. Airbnb's 2018 exit came out of a large hybrid codebase and a mix of technical and organisational problems <a href="#s4">[4]</a>. Intuit planned a gradual, screen-by-screen move starting with the first screen users see. It did not work out, and the team switched to building a complete native framework over four quarters, finishing in 2022 <a href="#s3">[3]</a>.</p>
+    <p>Shopify used brownfield migrations for its largest apps before <a href="#s5">[5]</a>. This time it chose a full rebuild, because agents are good at building Swift and Kotlin features when they have the React Native version to copy from, and a rebuild drops old constraints <a href="#s1">[1]</a>.</p>
+    <h3>My default</h3>
+    <p>For most apps, run a parallel native rebuild with the React Native app as the living specification, and ship it as an update to the same store listing. Keep brownfield for very large apps whose releases cannot pause, or for a long tail of rarely used screens you may simply retire.</p>
+    <p>If what you really want is shared business logic without JavaScript, look at Kotlin Multiplatform. Compose Multiplatform for iOS has been stable since May 2025 if you also want shared UI <a href="#s9">[9]</a>.</p>
+
+    <h2 id="playbook">The agent-assisted playbook</h2>
+    <p>Shopify warns that asking a model to convert a React Native feature in one shot gives you large, unmaintainable code <a href="#s1">[1]</a>. The work has to be structured. This is the sequence I use.</p>
+    <ol class="steps">
+      <li><div><b>Inventory behaviour before code</b><p>List every screen, deep link, push category, analytics event, feature flag and native module. Native modules you already wrote in Swift or Kotlin for React Native are often the easiest code to carry over.</p></div></li>
+      <li><div><b>Prove it on your hardest screen</b><p>One engineer, one week, one real screen in SwiftUI and Jetpack Compose. That is exactly how Shop started <a href="#s2">[2]</a>, and it tells you more than any estimate.</p></div></li>
+      <li><div><b>Pull business logic out of the UI</b><p>Logic that runs headless can be tested in milliseconds instead of minutes in a simulator. Shopify found simulator control to be a bottleneck and moved its logic out for this reason <a href="#s1">[1]</a>.</p></div></li>
+      <li><div><b>Port in small, reviewed checkpoints</b><p>Shopify's Helix splits each screen into ordered checkpoints. Each one must pass tests, match the running app visually, survive two adversarial code reviews and get human approval before it is committed <a href="#s1">[1]</a>.</p></div></li>
+      <li><div><b>Run agents in parallel, one worktree each</b><p>The Shop team ran several agent sessions in parallel across separate worktrees, with clear tasks and fast build and test loops <a href="#s2">[2]</a>. This is how I work every day: parallel coding agents, each in its own git worktree.</p></div></li>
+      <li><div><b>Prove parity, don't assume it</b><p>Compare screenshots and emitted events between the React Native app and the native one. The Shop team built tooling for exactly this <a href="#s2">[2]</a>.</p></div></li>
+      <li><div><b>Keep native experts in the review loop</b><p>Generated code can bring duplication, architectural drift and performance problems. Linting, tests, static analysis, performance checks and code review still decide quality <a href="#s2">[2]</a>.</p></div></li>
+    </ol>
+
+    <h2 id="continuity">Keep every user through the switch</h2>
+    <p>Users should never notice the rewrite, except that the app got faster. Shop's users stayed signed in, kept their push notifications and kept sending the analytics events that downstream systems depend on <a href="#s2">[2]</a>. Before the first native screen ships, check these:</p>
+    <ul class="check">
+      <li>Same bundle identifier, application ID and signing, so the native app installs as an update over the old one.</li>
+      <li>Sessions: on first launch, read tokens and settings from wherever the React Native app kept them, such as the Keychain, Keystore, AsyncStorage, MMKV or SQLite.</li>
+      <li>Push: keep notification permissions, register tokens again and keep payload formats unchanged.</li>
+      <li>Analytics: the same event names and properties, verified against the React Native app.</li>
+      <li>Deep links and universal links: every path still lands on the right screen.</li>
+      <li>Releases: with no over-the-air updates, lean on feature flags, phased App Store releases and staged Google Play rollouts.</li>
+      <li>Retire what nobody uses. Shop removed some screens and simplified others on the way <a href="#s2">[2]</a>.</li>
+    </ul>
+
+    <h2 id="faq">FAQ</h2>
+    <details><summary>Is React Native dead?</summary><p>No. It now runs only on its New Architecture and is actively developed <a href="#s6">[6]</a>. Shopify, which is leaving, still calls it excellent and fast <a href="#s1">[1]</a>. What changed is the price of the alternative.</p></details>
+    <details><summary>How long does a migration take?</summary><p>It depends on screen count and how much platform-specific surface you have. Shop went from a one-week proof of concept to both stores in about 12 weeks <a href="#s2">[2]</a>. A proof of concept on your hardest screen is the honest way to estimate yours.</p></details>
+    <details><summary>Will React Native engineers be able to work in Swift and Kotlin?</summary><p>Shopify found React Native engineers became productive in SwiftUI and Jetpack Compose faster than expected, because declarative UI ideas carry over <a href="#s2">[2]</a>.</p></details>
+    <details><summary>What do we lose?</summary><p>Mainly over-the-air JavaScript updates and one shared UI codebase. Parity between iOS and Android has to be enforced by process instead of by shared code, which is what Shopify now does <a href="#s2">[2]</a>.</p></details>
+
+    <div class="cta-card">
+      <h2>Moving off React Native?</h2>
+      <p>I have spent years inside React Native: JSI, Turbo Modules and the New Architecture. I build with parallel coding agents every day. That is the combination this migration needs: reading the React Native app as a specification and shipping it natively. Start with one week on your hardest screen.</p>
+      <div class="row">
+        <a class="btn btn-lg btn-white" href="https://www.linkedin.com/in/erik-dreifaldt/" rel="noopener">Message me on LinkedIn</a>
+        <a class="btn btn-lg btn-line" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fdreifaldt.com%2Freact-native-to-native%2F" rel="noopener">Share this guide</a>
+      </div>
+    </div>
+
+    <section class="sources" aria-label="Sources">
+      <h2 style="font-size:22px">Sources</h2>
+      <ol>
+        <li id="s1">Mustafa Ali, <a href="https://shopify.engineering/back-to-native" rel="noopener">Native is now the future of mobile at Shopify</a>, Shopify Engineering, 10 Sep 2026.</li>
+        <li id="s2"><a href="https://shopify.engineering/shop-app-migration" rel="noopener">Shop app migration to Swift and Kotlin</a>, Shopify Engineering, 10 Sep 2026.</li>
+        <li id="s3"><a href="https://medium.com/intuit-engineering/bye-react-native-hello-native-61fbe81515d0" rel="noopener">Bye React Native, hello native</a>, Intuit Engineering.</li>
+        <li id="s4">Gabriel Peal, <a href="https://medium.com/airbnb-engineering/sunsetting-react-native-1868ba28e30a" rel="noopener">Sunsetting React Native</a>, The Airbnb Tech Blog, 19 Jun 2018.</li>
+        <li id="s5"><a href="https://shopify.engineering/migrating-our-largest-mobile-app-to-react-native" rel="noopener">Migrating our largest mobile app to React Native</a>, Shopify Engineering.</li>
+        <li id="s6"><a href="https://docs.expo.dev/guides/new-architecture/" rel="noopener">React Native's New Architecture</a>, Expo documentation.</li>
+        <li id="s7">Jacob Clausen, <a href="https://expo.dev/blog/expo-brownfield-how-to-add-expo-to-your-existing-native-app-without-a-rewrite" rel="noopener">Expo brownfield: add Expo to your existing native app without a rewrite</a>, Expo blog, 5 Mar 2026.</li>
+        <li id="s8"><a href="https://www.infoq.com/news/2026/09/shopify-drops-react-native/" rel="noopener">Shopify drops React Native for Swift and Kotlin</a>, InfoQ, Sep 2026.</li>
+        <li id="s9"><a href="https://blog.jetbrains.com/kotlin/2025/05/compose-multiplatform-1-8-0-released-compose-multiplatform-for-ios-is-stable-and-production-ready/" rel="noopener">Compose Multiplatform 1.8.0: iOS is stable</a>, JetBrains, May 2025.</li>
+      </ol>
+    </section>
+  </article>
+</div>
+
+<footer>
+  <span>© 2026 Dreifaldt Consulting · Stockholm, Sweden</span>
+  <span><a href="../">dreifaldt.com</a> · <a href="https://www.linkedin.com/in/erik-dreifaldt/" rel="noopener">LinkedIn</a></span>
+</footer>
+</body>
+</html>

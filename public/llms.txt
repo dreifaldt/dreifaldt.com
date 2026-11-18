@@ -1,0 +1,16 @@
+# Erik Dreifaldt
+
+> Erik Dreifaldt is an AI-native developer in Stockholm, Sweden, and the founder of Dreifaldt Consulting. His background is React Native and Expo internals (JSI, Turbo Modules, the New Architecture). He helps teams move mobile apps from React Native to native Swift and Kotlin with coding agents, and builds AI agents with tool use, MCP servers and n8n automations.
+
+Contact: https://www.linkedin.com/in/erik-dreifaldt/
+
+## Pages
+
+- [Home](https://dreifaldt.com/): portfolio. Frontend, components, APIs, AI agents, data and infrastructure, shown as an exploded 3D device.
+- [React Native to native in 2026: a field guide](https://dreifaldt.com/react-native-to-native/): when to move a React Native app to Swift and Kotlin, rebuild vs. screen-by-screen migration, an agent-assisted playbook, and a checklist for keeping users signed in. Based on Shopify's September 2026 move back to native.
+
+## Services
+
+- React Native to native (Swift, Kotlin) migrations, starting with a one-week proof of concept on the hardest screen
+- React Native New Architecture work: JSI, Turbo Modules, Fabric, Expo and EAS
+- AI agents with tool use on Claude, MCP servers, n8n automations
