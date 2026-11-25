@@ -829,9 +829,11 @@ const SUB = {
 const loadingEl = document.querySelector('.loading');
 const loader = new GLTFLoader();
 loader.setMeshoptDecoder(MeshoptDecoder);
-const gltf = await new Promise((res, rej) => loader.load(GLB_URL, res, e => {
-  if (e.total) loadingEl.textContent = `Assembling ${Math.round(e.loaded / e.total * 100)}%`;
-}, rej));
+const inlineGlb = document.getElementById('glb');   // previews embed the model; the live site loads scene.glb
+const gltf = await new Promise((res, rej) => {
+  if (inlineGlb) loader.parse(Uint8Array.from(atob(inlineGlb.textContent.trim()), c => c.charCodeAt(0)).buffer, '', res, rej);
+  else loader.load(GLB_URL, res, e => { if (e.total) loadingEl.textContent = `Assembling ${Math.round(e.loaded / e.total * 100)}%`; }, rej);
+});
 const root = gltf.scene;
 scene.add(root);
 
