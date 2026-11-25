@@ -1,0 +1,9 @@
+{
+  "name": "dreifaldt-3d-tools",
+  "private": true,
+  "description": "Build tools for the 3D homepage: model compression and share-image fonts",
+  "devDependencies": {
+    "@gltf-transform/cli": "^4.5.1",
+    "geist": "^1.4.2"
+  }
+}

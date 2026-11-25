@@ -4,9 +4,15 @@ The homepage's exploded device and phone are modelled procedurally in Blender an
 
 ```
 pip install bpy                                        # Blender 5.3 as a Python module
+(cd tools/3d && npm i)                                 # gltf-transform (model compression) + Geist fonts
 python3 tools/3d/blender/build_scene.py -- tools/3d/build   # writes build/scene.glb + build/dreifaldt.blend
-python3 tools/3d/build.py cdn                          # inlines the model into public/index.html
+python3 tools/3d/build.py cdn                          # writes public/index.html + public/scene.glb (meshopt-compressed)
 ```
+
+Rendering: studio softbox environment, bead-blasted metal micro-texture, printed circuit-board textures, transmission glass,
+ambient occlusion (GTAO), depth of field on close-ups, bloom and film grain. Lower-end machines drop to cheaper tiers automatically.
+Motion: parts ride damped springs, screws back out first, cracks spread from the button, shards and glass dust fall under gravity,
+flex cables stretch between layers and the fans get motion blur.
 
 Share images (optional):
 

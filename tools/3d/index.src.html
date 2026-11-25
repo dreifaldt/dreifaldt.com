@@ -489,18 +489,21 @@ footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;b
 
 <script type="importmap">{"imports":{"three":"__THREE__/build/three.module.js","three/addons/":"__THREE__/examples/jsm/"}}</script>
 <script id="layout" type="application/json">__LAYOUT__</script>
-<script id="glb" type="application/octet-stream">__GLB__</script>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
 /* Set a public address here to show the Message button. */
 const CONTACT_EMAIL = '';
+const GLB_URL = 'scene.glb';   // Blender export, meshopt-compressed (tools/3d/build.py copies it next to the page)
 
 const LAYOUT = JSON.parse(document.getElementById('layout').textContent);
 const BLOCK = Object.fromEntries(LAYOUT.blocks.map(b => [b.id, b]));
@@ -714,46 +717,95 @@ try {
   document.querySelectorAll('.story').forEach(s => s.style.height = 'auto');
   throw e;
 }
-const DPR = Math.min(devicePixelRatio || 1, TOUCH ? 1.75 : 2);
+// Quality tiers: 2 = ambient occlusion, depth of field and shadows · 1 = shadows only · 0 = phones
+let tier = TOUCH ? 0 : 2;
+let DPR = Math.min(devicePixelRatio || 1, TOUCH ? 1.75 : 2);
 renderer.setPixelRatio(DPR);
 renderer.setSize(innerWidth, innerHeight, false);
 renderer.toneMapping = THREE.NeutralToneMapping;
-renderer.toneMappingExposure = 1.0;
+renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.shadowMap.enabled = !TOUCH;
+renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
+
+// Studio environment: softboxes and strip lights, the way product photographers light aluminium.
+function studioEnvironment() {
+  const env = new THREE.Scene();
+  env.background = new THREE.Color(0x030304);
+  const panel = (w, h, pos, intensity, color = 0xffffff) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(intensity), side: THREE.DoubleSide }));
+    m.position.set(...pos); m.lookAt(0, 4, 0); env.add(m);
+  };
+  panel(36, 14, [0, 26, 0], 1.7);                 // overhead softbox
+  panel(5, 30, [-24, 8, 10], 5.0);                // left strip
+  panel(5, 30, [24, 8, 10], 3.8);                 // right strip
+  panel(34, 3.5, [0, 14, -26], 4.2, 0xbfd9ff);    // cool rim strip behind
+  panel(26, 4, [0, -6, 26], 0.6, 0xffe7cc);       // warm bounce from below
+  panel(10, 10, [18, 20, 18], 3.0);               // key softbox
+  return env;
+}
 const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-scene.environmentIntensity = 0.72;
+scene.environment = pmrem.fromScene(studioEnvironment(), 0.02).texture;
+scene.environmentIntensity = 0.9;
 
 const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.5, 600);
-const key = new THREE.DirectionalLight(0xffffff, 1.7);
+const key = new THREE.DirectionalLight(0xffffff, 1.3);
 key.position.set(14, 34, 18); key.target.position.set(0, 6, 0);
-key.castShadow = true; key.shadow.mapSize.set(2048, 2048);
-Object.assign(key.shadow.camera, { left: -16, right: 16, top: 18, bottom: -18, near: 5, far: 90 });
-key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
+key.castShadow = !TOUCH; key.shadow.mapSize.set(2048, 2048);
+Object.assign(key.shadow.camera, { left: -18, right: 18, top: 20, bottom: -20, near: 5, far: 95 });
+key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02; key.shadow.radius = 4;
 scene.add(key, key.target);
-const rim = new THREE.DirectionalLight(0x9fc7ff, 2.4); rim.position.set(-20, 10, -24); scene.add(rim);
-const fill = new THREE.DirectionalLight(0xffe2c0, 0.3); fill.position.set(10, -6, 20); scene.add(fill);
+const rim = new THREE.DirectionalLight(0x9fc7ff, 1.6); rim.position.set(-20, 10, -24); scene.add(rim);
+const fill = new THREE.DirectionalLight(0xffe2c0, 0.25); fill.position.set(10, -6, 20); scene.add(fill);
 
-// soft floor glow so the products sit somewhere
+// faint floor glow plus a shadow catcher so the products sit on something
 const floorTex = (() => {
   const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
   const g = x.createRadialGradient(256, 256, 0, 256, 256, 256);
-  g.addColorStop(0, 'rgba(70,90,120,.55)'); g.addColorStop(.45, 'rgba(30,40,60,.18)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  g.addColorStop(0, 'rgba(60,75,100,.42)'); g.addColorStop(.45, 'rgba(25,32,48,.14)'); g.addColorStop(1, 'rgba(0,0,0,0)');
   x.fillStyle = g; x.fillRect(0, 0, 512, 512); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 })();
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(70, 70), new THREE.MeshBasicMaterial({ map: floorTex, transparent: true, depthWrite: false }));
 floor.rotation.x = -Math.PI / 2; floor.position.y = -0.4; scene.add(floor);
+const shadowCatcher = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.ShadowMaterial({ opacity: 0.5 }));
+shadowCatcher.rotation.x = -Math.PI / 2; shadowCatcher.position.y = -0.17; shadowCatcher.receiveShadow = true; scene.add(shadowCatcher);
+
+// film: grain, vignette and a touch of lens fringing, faded out while the page still looks like a website
+const FilmShader = {
+  uniforms: { tDiffuse: { value: null }, time: { value: 0 }, grain: { value: 0.012 }, vignette: { value: 0 }, ca: { value: 0 } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float time, grain, vignette, ca; varying vec2 vUv;
+    float hash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+    void main(){
+      vec2 d = vUv - 0.5;
+      vec3 col = vec3(texture2D(tDiffuse, vUv + d * ca).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - d * ca).b);
+      float v = smoothstep(0.98, 0.22, length(d * vec2(1.0, 0.86)));
+      col *= mix(1.0, v, vignette);
+      col += (hash(vUv * 1024.0 + fract(time)) - 0.5) * grain;
+      gl_FragColor = vec4(col, 1.0);
+    }`,
+};
 
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), 0.5, 0.4, 1.35);
+const gtao = new GTAOPass(scene, camera, innerWidth, innerHeight);
+gtao.output = GTAOPass.OUTPUT.Default;
+gtao.blendIntensity = 0.9;
+gtao.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.4, thickness: 1.2, scale: 1.0, samples: 12, distanceFallOff: 1.0, screenSpaceRadius: false });
+gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 12 });
+gtao.enabled = tier >= 2;
+composer.addPass(gtao);
+const bokeh = new BokehPass(scene, camera, { focus: 30, aperture: 0.0009, maxblur: 0.007 });
+bokeh.enabled = false;
+composer.addPass(bokeh);
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), 0.38, 0.4, 1.6);
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
+const film = new ShaderPass(FilmShader);
+composer.addPass(film);
 
 /* ------------------------------------------------------------------ load the Blender scene */
 const SUB = {
@@ -774,8 +826,12 @@ const SUB = {
   chassis: ['iOS & Android', 'Platform APIs, both stores'],
 };
 
-const bin = Uint8Array.from(atob(document.getElementById('glb').textContent.trim()), c => c.charCodeAt(0));
-const gltf = await new Promise((res, rej) => new GLTFLoader().parse(bin.buffer, '', res, rej));
+const loadingEl = document.querySelector('.loading');
+const loader = new GLTFLoader();
+loader.setMeshoptDecoder(MeshoptDecoder);
+const gltf = await new Promise((res, rej) => loader.load(GLB_URL, res, e => {
+  if (e.total) loadingEl.textContent = `Assembling ${Math.round(e.loaded / e.total * 100)}%`;
+}, rej));
 const root = gltf.scene;
 scene.add(root);
 
@@ -786,7 +842,7 @@ const phonePivot = new THREE.Group(); scene.add(phonePivot); phonePivot.add(phon
 phoneNode.position.set(0, 0, -0.42);
 phonePivot.position.set(0, 4.95, 0);
 
-// textures
+// screen textures
 const isBig = innerWidth * DPR > 2200;
 const webCv = document.createElement('canvas'); webCv.width = isBig ? 3072 : 2048; webCv.height = Math.round(webCv.width * LAYOUT.screen.texH / LAYOUT.screen.texW);
 const xrCv = document.createElement('canvas'); xrCv.width = 2048; xrCv.height = 1250;
@@ -797,12 +853,110 @@ const redraw = () => { drawWebsite(webCv); drawXray(xrCv); drawApp(appCv); webTe
 redraw();
 document.fonts?.ready.then(() => Promise.all([document.fonts.load(`700 40px Geist`), document.fonts.load(`500 20px "Geist Mono"`)])).then(redraw).catch(() => {});
 
+/* ------------------------------------------------------------------ materials */
+// Bead-blasted micro surface: random normals and roughness, tiled over box-projected UVs from Blender.
+function beadTextures(size = 256) {
+  const mk = fill => {
+    const c = document.createElement('canvas'); c.width = c.height = size;
+    const x = c.getContext('2d'); const img = x.createImageData(size, size);
+    for (let i = 0; i < size * size; i++) fill(img.data, i * 4);
+    x.putImageData(img, 0, 0);
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 3); t.anisotropy = 8; return t;
+  };
+  const normal = mk((d, i) => { d[i] = 128 + (Math.random() - .5) * 70; d[i + 1] = 128 + (Math.random() - .5) * 70; d[i + 2] = 255; d[i + 3] = 255; });
+  const rough = mk((d, i) => { const v = 150 + Math.random() * 70; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; });
+  return { normal, rough };
+}
+const bead = beadTextures();
+
+// Printed circuit boards: solder mask, inner-layer traces, vias, fiducials and white silkscreen.
+function pcbTexture(kind) {
+  const W = 2048, H = kind === 'core' ? 1229 : 1024;
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+  let seed = kind.length * 977; const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  x.fillStyle = '#07140f'; x.fillRect(0, 0, W, H);
+  x.lineCap = 'round';
+  for (let i = 0; i < 260; i++) {             // inner-layer copper showing through the mask
+    let px = r() * W, py = r() * H;
+    x.strokeStyle = `rgba(${40 + r() * 30},${90 + r() * 40},${62 + r() * 30},${.25 + r() * .3})`;
+    x.lineWidth = 2 + r() * 4;
+    x.beginPath(); x.moveTo(px, py);
+    for (let k = 0; k < 4; k++) {
+      const len = 40 + r() * 220, dir = Math.floor(r() * 8) * Math.PI / 4;
+      px += Math.cos(dir) * len; py += Math.sin(dir) * len; x.lineTo(px, py);
+    }
+    x.stroke();
+  }
+  for (let i = 0; i < 900; i++) {             // vias
+    const vx = r() * W, vy = r() * H, vr = 3 + r() * 4;
+    x.fillStyle = '#b48a3c'; x.beginPath(); x.arc(vx, vy, vr, 0, 7); x.fill();
+    x.fillStyle = '#05100b'; x.beginPath(); x.arc(vx, vy, vr * .45, 0, 7); x.fill();
+  }
+  for (const [fx, fy] of [[60, 60], [W - 60, 60], [60, H - 60], [W - 60, H - 60]]) {   // fiducials
+    x.fillStyle = '#d6a64e'; x.beginPath(); x.arc(fx, fy, 14, 0, 7); x.fill();
+    x.strokeStyle = 'rgba(230,230,225,.8)'; x.lineWidth = 2; x.beginPath(); x.arc(fx, fy, 26, 0, 7); x.stroke();
+  }
+  x.fillStyle = 'rgba(232,232,226,.92)'; x.strokeStyle = 'rgba(232,232,226,.85)'; x.lineWidth = 3;
+  x.textBaseline = 'middle';
+  if (kind === 'core') {
+    // Blender board coordinates (15 × 9) → canvas pixels
+    const P = (bx, by) => [(bx + 7.5) / 15 * W, (4.5 - by) / 9 * H];
+    const box = (cx, cy, w, h) => { const [a, b] = P(cx - w / 2, cy + h / 2); x.strokeRect(a, b, w / 15 * W, h / 9 * H); };
+    const label = (t, bx, by, size = 24, align = 'center') => { const [a, b] = P(bx, by); x.font = `600 ${size}px "Geist Mono", ui-monospace, monospace`; x.textAlign = align; x.fillText(t, a, b); };
+    box(0, 0.2, 4.9, 4.9); label('U1', -2.75, 2.75);
+    [1.85, 0.75, -0.35, -1.45].forEach((y, i) => { box(-3.35, y, 1.12, .84); box(3.35, y, 1.12, .84); label(`M${i + 1}`, -4.2, y); label(`M${i + 5}`, 4.2, y); });
+    for (let k = 0; k < 5; k++) { box(-1.8 + k * .9, -2.58, .68, .68); label(`L${k + 1}`, -1.8 + k * .9, -3.1, 20); }
+    label('J1', 6.55, 3.05); label('J2', 6.55, -3.05); label('Y1', 4.7, -3.85, 20);
+    label('DREIFALDT  E1 AGENT  LOGIC BOARD', -7.0, -3.85, 30, 'left');
+    label('820-02607-B   REV B   2026-11', -7.0, -4.15, 22, 'left');
+    label('DESIGNED IN STOCKHOLM', 7.0, -4.15, 22, 'right');
+    const [sx, sy] = P(-6.9, 3.3);                // QR-style traceability label
+    x.fillStyle = '#e9e9e4'; x.fillRect(sx, sy, 150, 150);
+    x.fillStyle = '#111';
+    for (let i = 0; i < 12; i++) for (let j = 0; j < 12; j++) if (r() > .5) x.fillRect(sx + 9 + i * 11, sy + 9 + j * 11, 11, 11);
+  } else {
+    x.font = '600 34px "Geist Mono", ui-monospace, monospace'; x.textAlign = 'left';
+    x.fillText(kind === 'native' ? 'E1 NATIVE  LOGIC BOARD  REV A' : 'DREIFALDT NVME  2TB', 70, H - 70);
+    for (let i = 0; i < 8; i++) x.strokeRect(120 + r() * (W - 400), 120 + r() * (H - 380), 80 + r() * 200, 60 + r() * 140);
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.anisotropy = 8;
+  return t;
+}
+
+const phys = o => new THREE.MeshPhysicalMaterial(o);
+const n2 = s => new THREE.Vector2(s, s);
+const MATS = {
+  Aluminium: phys({ color: 0xc8cbd1, metalness: 1, roughness: .5, roughnessMap: bead.rough, normalMap: bead.normal, normalScale: n2(.16) }),
+  Anodized: phys({ color: 0x4a4d53, metalness: .85, roughness: .55, roughnessMap: bead.rough, normalMap: bead.normal, normalScale: n2(.1) }),
+  SpaceBlack: phys({ color: 0x1b1c1f, metalness: .8, roughness: .6, roughnessMap: bead.rough, normalMap: bead.normal, normalScale: n2(.12) }),
+  Graphite: phys({ color: 0x202226, metalness: .6, roughness: .65, roughnessMap: bead.rough, normalMap: bead.normal, normalScale: n2(.12) }),
+  Titanium: phys({ color: 0x8e8981, metalness: 1, roughness: .5, roughnessMap: bead.rough, normalMap: bead.normal, normalScale: n2(.14) }),
+  Steel: phys({ color: 0x2c2d31, metalness: 1, roughness: .3 }),
+  Gold: phys({ color: 0xf2bf6b, metalness: 1, roughness: .22 }),
+  Copper: phys({ color: 0xe9996e, metalness: 1, roughness: .24, clearcoat: .3 }),
+  Ceramic: phys({ color: 0xe8e9eb, metalness: 0, roughness: .3, clearcoat: 1, clearcoatRoughness: .08 }),
+  LinkedInBlue: phys({ color: 0x0a66c2, metalness: 0, roughness: .32, clearcoat: .9, clearcoatRoughness: .1 }),
+  DisplayBlack: phys({ color: 0x020203, metalness: 0, roughness: .14, clearcoat: .6, clearcoatRoughness: .12 }),
+  Rubber: phys({ color: 0x111113, roughness: .92 }),
+  Ferrite: phys({ color: 0x2b2c2f, metalness: .25, roughness: .6, roughnessMap: bead.rough, normalMap: bead.normal, normalScale: n2(.3) }),
+  MLCC: phys({ color: 0x8a6944, roughness: .5 }),
+  Battery: phys({ color: 0x131315, roughness: .55, clearcoat: .4 }),
+  Lens: phys({ color: 0x050507, metalness: .2, roughness: .05, clearcoat: 1 }),
+  Recess: new THREE.MeshBasicMaterial({ color: 0x000000 }),
+  Engrave: phys({ color: 0x8f9297, metalness: 1, roughness: .62 }),
+  Substrate: phys({ color: 0x0f2b1d, roughness: .42, clearcoat: .6 }),
+  Glass: phys({ color: 0xffffff, metalness: 0, roughness: .03, transmission: 1, thickness: .1, ior: 1.5 }),
+  Acrylic: phys({ color: 0xcfe2ff, metalness: 0, roughness: .3, transmission: .9, thickness: .3, ior: 1.49 }),
+  Frost: phys({ color: 0xeef3ff, metalness: 0, roughness: .45, transmission: .7, thickness: .2 }),
+};
+const pcbMats = {
+  core: phys({ map: pcbTexture('core'), roughness: .5, metalness: .05, clearcoat: .55, clearcoatRoughness: .3 }),
+  ssd: phys({ map: pcbTexture('ssd'), roughness: .5, metalness: .05, clearcoat: .55, clearcoatRoughness: .3 }),
+  native: phys({ map: pcbTexture('native'), roughness: .5, metalness: .05, clearcoat: .55, clearcoatRoughness: .3 }),
+};
 const shardMat = new THREE.MeshBasicMaterial({ map: webTex, transparent: true, side: THREE.DoubleSide });
 const xrayMat = new THREE.MeshBasicMaterial({ map: xrTex, color: new THREE.Color(1.7, 1.7, 1.7) });
 const appMat = new THREE.MeshBasicMaterial({ map: appTex });
-const glassMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: .06, metalness: 0, transparent: true, opacity: .05, envMapIntensity: .7, clearcoat: 1, depthWrite: false });
-const acrylMat = new THREE.MeshPhysicalMaterial({ color: 0xbfd8ff, roughness: .35, metalness: 0, transparent: true, opacity: .32, envMapIntensity: 1.2 });
-const frostMat = new THREE.MeshPhysicalMaterial({ color: 0xe8eeff, roughness: .5, metalness: 0, transparent: true, opacity: .55 });
 let coreMat = null;
 const forAll = fn => { webPivot.traverse(fn); phonePivot.traverse(fn); };
 
@@ -813,24 +967,25 @@ forAll(o => {
   if (n === 'WebsiteSurface') { o.material = shardMat; o.castShadow = false; }
   else if (n === 'XRaySurface') { o.material = xrayMat; o.castShadow = false; }
   else if (n === 'AppSurface') o.material = appMat;
-  else if (n === 'Glass') { o.material = glassMat; o.castShadow = false; }
-  else if (n === 'Acrylic') { o.material = acrylMat; o.castShadow = false; }
-  else if (n === 'Frost') o.material = frostMat;
+  else if (n === 'PCB') o.material = /core/.test(o.name) ? pcbMats.core : /native/.test(o.name) ? pcbMats.native : pcbMats.ssd;
   else if (n === 'CoreGlow') { coreMat = o.material; o.castShadow = false; }
-  else if (n === 'Aluminium' || n === 'Titanium') { o.material.envMapIntensity = .55; o.material.roughness = .46; o.material.color.multiplyScalar(.8); }
   else if (/Glow/.test(n)) o.castShadow = false;
+  else if (MATS[n]) {
+    o.material = MATS[n];
+    if (n === 'Glass' || n === 'Acrylic' || n === 'Frost') o.castShadow = false;
+  }
 });
 
-// parts
+/* ------------------------------------------------------------------ parts, screws, shards */
 function collect(node) {
   const list = [];
   node.traverse(o => {
     if (o.userData.part === undefined) return;
     const anchor = o.getObjectByName('anchor_' + o.userData.part);
-    list.push({ id: o.userData.part, obj: o, base: o.position.clone(), lift: o.userData.lift || 0, side: o.userData.side || 1, anchor });
+    list.push({ id: o.userData.part, obj: o, base: o.position.clone(), lift: o.userData.lift || 0, side: o.userData.side || 1, anchor, y: undefined, v: 0, start: 0 });
   });
   list.sort((a, b) => a.lift - b.lift);
-  list.forEach((p, i) => p.rank = i / Math.max(1, list.length - 1));
+  list.forEach((p, i) => { p.rank = i / Math.max(1, list.length - 1); p.start = (1 - p.rank) * 0.4; });
   return list;
 }
 const webParts = collect(websiteNode);
@@ -839,17 +994,39 @@ const byId = Object.fromEntries([...webParts, ...phoneParts].map(p => [p.id, p])
 
 const subs = [];   // data discs, chip lid
 const rotors = [];
+const screws = [];
 forAll(o => {
   if (o.userData.sub !== undefined) subs.push({ o, base: o.position.y, k: o.userData.sub, kind: 'disc' });
   if (o.userData.sublift !== undefined) subs.push({ o, base: o.position.y, k: o.userData.sublift, kind: 'lid' });
   if (o.userData.spin !== undefined) rotors.push(o);
+  if (o.userData.screw !== undefined) {
+    let q = o.parent; while (q && q.userData.part === undefined) q = q.parent;
+    screws.push({ o, base: o.position.clone(), k: o.userData.screw, part: q ? byId[q.userData.part] : null, product: phoneParts.some(p => p.obj === q) ? 'phone' : 'web' });
+  }
 });
 
-// shards
+// motion-blur discs that fade in when the fans spin up
+const blurTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
+  x.translate(256, 256);
+  for (let i = 0; i < 260; i++) {
+    const a = Math.random() * Math.PI * 2, r0 = 80 + Math.random() * 40, r1 = 200 + Math.random() * 50;
+    x.strokeStyle = `rgba(255,255,255,${.04 + Math.random() * .08})`; x.lineWidth = 1 + Math.random() * 3;
+    x.beginPath(); x.arc(0, 0, r0 + Math.random() * (r1 - r0), a, a + .3 + Math.random() * .6); x.stroke();
+  }
+  return new THREE.CanvasTexture(c);
+})();
+const blurDiscs = rotors.map(r => {
+  const d = new THREE.Mesh(new THREE.RingGeometry(0.76, 2.46, 96, 1), new THREE.MeshBasicMaterial({ map: blurTex, color: 0xb4b8c0, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+  d.rotation.x = -Math.PI / 2; d.position.y = 0.18; r.add(d); return d;
+});
+
+// shards: each piece gets a launch velocity and spin; gravity pulls them back down
 const shardPart = byId.shards.obj;
 const [iu, iv] = LAYOUT.impact;
 const impact = new THREE.Vector3((iu - .5) * LAYOUT.screen.w, 1.81, (iv - .5) * LAYOUT.screen.h);
 let rs = 1234567; const rnd = () => (rs = (rs * 16807) % 2147483647) / 2147483647;
+const GRAVITY = 16;
 const shards = [];
 shardPart.traverse(o => {
   if (!o.userData.shard) return;
@@ -858,12 +1035,70 @@ shardPart.traverse(o => {
   const d = radial.length();
   if (d < 1e-3) radial.set(rnd() - .5, 0, rnd() - .5);
   radial.normalize();
-  const fly = radial.clone().multiplyScalar(7 + rnd() * 13).add(new THREE.Vector3((rnd() - .5) * 3, 9 + rnd() * 16, (rnd() - .5) * 3));
+  const near = 1 - Math.min(d / 16, 1);
+  const v0 = radial.clone().multiplyScalar(4 + rnd() * 7 + near * 6).add(new THREE.Vector3((rnd() - .5) * 2.5, 9 + rnd() * 9 + near * 8, (rnd() - .5) * 2.5));
   const axis = new THREE.Vector3(rnd() - .5, rnd() - .5, rnd() - .5).normalize();
-  shards.push({ o, p0, radial, d, fly, axis, spin: 2 + rnd() * 7, delay: Math.min(d / 16, 1) * .45, crack: .04 + rnd() * .07, tilt: (rnd() - .5) * .12, q: new THREE.Quaternion() });
+  shards.push({ o, p0, radial, d, v0, axis, spin: 2 + rnd() * 6, delay: Math.min(d / 16, 1) * .4, crack: .04 + rnd() * .08, tilt: (rnd() - .5) * .14, q: new THREE.Quaternion() });
 });
 document.getElementById('stat-shards').textContent = shards.length;
 document.getElementById('stat-parts').textContent = webParts.length + phoneParts.length;
+
+// glass dust: bright specks that burst from the impact point
+const DUST = TOUCH ? 300 : 700;
+const dustPos = new Float32Array(DUST * 3);
+const dustVel = [], dustDelay = [];
+for (let i = 0; i < DUST; i++) {
+  const v = new THREE.Vector3(rnd() - .5, rnd() * .9 + .25, rnd() - .5).normalize().multiplyScalar(3 + rnd() * 15);
+  dustVel.push(v); dustDelay.push(rnd() * .12);
+}
+const dustGeo = new THREE.BufferGeometry(); dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+const sparkTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
+  const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.35, 'rgba(190,220,255,.5)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  x.fillStyle = g; x.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c);
+})();
+const dustMat = new THREE.PointsMaterial({ size: 0.09, map: sparkTex, color: new THREE.Color(2.4, 2.6, 3.0), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+const dust = new THREE.Points(dustGeo, dustMat); dust.frustumCulled = false; dust.visible = false; websiteNode.add(dust);
+
+// flex cables that stretch between layers as the device comes apart
+const flexTex = (() => {
+  const c = document.createElement('canvas'); c.width = 128; c.height = 512; const x = c.getContext('2d');
+  x.fillStyle = '#b8701c'; x.fillRect(0, 0, 128, 512);
+  for (let i = 0; i < 14; i++) { x.fillStyle = 'rgba(255,190,110,.55)'; x.fillRect(10 + i * 8, 0, 3, 512); }
+  x.fillStyle = 'rgba(40,20,5,.35)'; x.fillRect(0, 0, 6, 512); x.fillRect(122, 0, 6, 512);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+})();
+const flexMat = phys({ map: flexTex, roughness: .36, metalness: .12, clearcoat: .7, clearcoatRoughness: .2, side: THREE.DoubleSide });
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const CABLES = [
+  { a: 'core', pa: V(6.55, 1.33, -1.8), b: 'api', pb: V(7.05, 1.29, -2.4), out: V(1, 0, 0), w: V(0, 0, 1), width: .7 },
+  { a: 'core', pa: V(6.55, 1.33, 1.8), b: 'data', pb: V(6.9, 0.67, 2.0), out: V(1, 0, 0), w: V(0, 0, 1), width: .7 },
+  { a: 'display', pa: V(-7.3, 1.62, -3.0), b: 'components', pb: V(-7.35, 1.38, -3.0), out: V(-1, 0, 0), w: V(0, 0, 1), width: .9 },
+  { a: 'fans', pa: V(-7.2, 0.2, 2.6), b: 'core', pb: V(-7.0, 1.06, 2.6), out: V(-1, 0, 0), w: V(0, 0, 1), width: .5 },
+].map(c => {
+  const N = 36, pos = new Float32Array((N + 1) * 2 * 3), uv = new Float32Array((N + 1) * 2 * 2), idx = [];
+  for (let i = 0; i <= N; i++) { uv.set([0, i / N, 1, i / N], i * 4); if (i < N) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.setIndex(idx);
+  const m = new THREE.Mesh(g, flexMat); m.frustumCulled = false; m.castShadow = true; websiteNode.add(m);
+  return { ...c, N, pos, g, m };
+});
+const _A = new THREE.Vector3(), _B = new THREE.Vector3(), _C1 = new THREE.Vector3(), _C2 = new THREE.Vector3(), _P = new THREE.Vector3();
+function placeCables(E) {
+  for (const c of CABLES) {
+    c.m.visible = E > 0.02;
+    if (!c.m.visible) continue;
+    _A.copy(byId[c.a].obj.position).add(c.pa);
+    _B.copy(byId[c.b].obj.position).add(c.pb);
+    const L = 0.35 + 0.3 * _A.distanceTo(_B);
+    _C1.copy(_A).addScaledVector(c.out, L); _C2.copy(_B).addScaledVector(c.out, L);
+    for (let i = 0; i <= c.N; i++) {
+      const t = i / c.N, u = 1 - t;
+      _P.set(0, 0, 0).addScaledVector(_A, u * u * u).addScaledVector(_C1, 3 * u * u * t).addScaledVector(_C2, 3 * u * t * t).addScaledVector(_B, t * t * t);
+      c.pos.set([_P.x - c.w.x * c.width / 2, _P.y - c.w.y * c.width / 2, _P.z - c.w.z * c.width / 2, _P.x + c.w.x * c.width / 2, _P.y + c.w.y * c.width / 2, _P.z + c.w.z * c.width / 2], i * 6);
+    }
+    c.g.attributes.position.needsUpdate = true; c.g.computeVertexNormals();
+  }
+}
 
 // labels
 const labelLayer = document.getElementById('labels');
@@ -882,7 +1117,6 @@ for (const p of [...webParts, ...phoneParts]) {
 
 /* ------------------------------------------------------------------ choreography */
 // camera keys: t, target, azimuth, polar (deg from straight down), frame width/height in world units, side (-1 object left / 1 object right)
-const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const WEB_KEYS = [
   { t: 0.00, T: V(0, 1.83, 0), az: 0, pol: 0.02, fw: 17.4, fh: 11.0, side: 0 },
   { t: 0.30, T: V(0, 1.83, 0), az: 0, pol: 0.02, fw: 17.4, fh: 11.0, side: 0 },
@@ -919,13 +1153,15 @@ function distFor(k) {
   return Math.max(fh / 2 / half, fw / 2 / (half * aspect * wEff));
 }
 const tmpPos = new THREE.Vector3(), tmpT = new THREE.Vector3();
-function applyCamera(keys, t, mouse) {
+function applyCamera(keys, t, mouse, now) {
   let i = 0; while (i < keys.length - 2 && t > keys[i + 1].t) i++;
   const a = keys[i], b = keys[i + 1];
   const f = ease(clamp((t - a.t) / (b.t - a.t)));
   tmpT.lerpVectors(a.T, b.T, f);
-  const az = (lerp(a.az, b.az, f) + mouse.x * 2.5) * D2R;
-  const pol = Math.max(0.0005, (lerp(a.pol, b.pol, f) + mouse.y * 1.5 * (lerp(a.pol, b.pol, f) > 5 ? 1 : 0)) * D2R);
+  const polDeg = lerp(a.pol, b.pol, f);
+  const drift = REDUCED ? 0 : clamp((polDeg - 5) / 20);     // slow hand-held drift, off while it still looks like a page
+  const az = (lerp(a.az, b.az, f) + mouse.x * 2.5 + Math.sin(now * 0.00021) * 1.1 * drift) * D2R;
+  const pol = Math.max(0.0005, (polDeg + (polDeg > 5 ? mouse.y * 1.5 : 0) + Math.sin(now * 0.00017 + 1) * 0.6 * drift) * D2R);
   const dist = lerp(distFor(a), distFor(b), f);
   tmpPos.set(Math.sin(pol) * Math.sin(az), Math.cos(pol), Math.sin(pol) * Math.cos(az)).multiplyScalar(dist).add(tmpT);
   camera.position.copy(tmpPos);
@@ -937,35 +1173,65 @@ function applyCamera(keys, t, mouse) {
   if (PORTRAIT()) camera.setViewOffset(W, H, 0, Math.abs(side) * H * .17 - oy * H * .5, W, H);
   else camera.setViewOffset(W, H, -side * W * .2, -oy * H, W, H);
   camera.updateProjectionMatrix();
+  return dist;
 }
 
-function explodeParts(list, E, wobble = 1, scale = 1, focus = null, up = 7, down = 2.5) {
+// Parts ride damped springs toward their scroll position, so they have weight, overshoot a little and settle.
+const SPRING_K = 115, SPRING_C = 15;
+function explodeParts(list, E, dt, scale = 1, focus = null, up = 7, down = 2.5) {
   const fl = focus ? byId[focus[0]].lift : 0, fa = focus ? ease(focus[1]) : 0;
   for (const p of list) {
-    const start = (1 - p.rank) * 0.4;
-    const e = ease(clamp((E - start) / 0.6));
-    p.e = e;
+    const e = ease(clamp((E - p.start) / 0.6));
+    const target = p.lift * scale * e + (focus ? (p.lift > fl + .01 ? up : p.lift < fl - .01 ? -down : 0) * fa : 0);
+    if (p.y === undefined || REDUCED || dt <= 0) { p.y = target; p.v = 0; }
+    else {
+      const n = 4, h = dt / n;
+      for (let i = 0; i < n; i++) { p.v += (SPRING_K * (target - p.y) - SPRING_C * p.v) * h; p.y += p.v * h; }
+    }
     p.obj.position.copy(p.base);
-    p.obj.position.y += p.lift * scale * e + (focus ? (p.lift > fl + .01 ? up : p.lift < fl - .01 ? -down : 0) * fa : 0);
-    p.obj.rotation.set(0, Math.sin(Math.PI * e) * 0.07 * p.side * wobble, Math.sin(Math.PI * e) * 0.025 * p.side * wobble);
+    p.obj.position.y += p.y;
+    const tilt = clamp(p.v * 0.0035, -0.05, 0.05);
+    p.obj.rotation.set(tilt * 0.6, Math.sin(Math.PI * e) * 0.035 * p.side, tilt * p.side);
+  }
+}
+
+// Screws back out and spin before their part lifts, then float above their holes.
+function placeScrews(E, product) {
+  for (const s of screws) {
+    if (s.product !== product) continue;
+    const st = s.part ? s.part.start : 0.2;
+    const u = ease(clamp((E - (st - 0.13) - s.k * 0.012) / 0.12));
+    s.o.position.copy(s.base); s.o.position.y += u * 0.85;
+    s.o.rotation.y = -u * Math.PI * 8;
   }
 }
 
 function placeShards(c, q) {
-  const hide = q > 0.93;
-  shardMat.opacity = 1 - ramp(q, 0.5, 0.88);
+  const front = c * 19;                       // the crack front races out from the button
+  const hide = q > 0.95;
+  shardMat.opacity = 1 - ramp(q, 0.55, 0.9);
   for (const s of shards) {
     s.o.visible = !hide;
     if (hide) continue;
-    const qi = clamp((q - s.delay) / (1 - s.delay));
-    const fq = easeOut(qi);
-    s.o.position.copy(s.p0)
-      .addScaledVector(s.radial, s.crack * c * (1.2 - Math.min(s.d / 14, 1)))
-      .addScaledVector(s.fly, fq);
-    s.o.position.y += 0.03 * c;
-    s.q.setFromAxisAngle(s.axis, s.spin * fq + s.tilt * c);
+    const ck = clamp((front - s.d) / 1.4);
+    const ft = clamp((q - s.delay) / (1 - s.delay)) * 1.75;
+    s.o.position.copy(s.p0).addScaledVector(s.radial, s.crack * ck).addScaledVector(s.v0, ft);
+    s.o.position.y += 0.025 * ck - 0.5 * GRAVITY * ft * ft;
+    s.q.setFromAxisAngle(s.axis, s.spin * ft + s.tilt * ck);
     s.o.quaternion.copy(s.q);
   }
+}
+
+function placeDust(qd) {
+  dust.visible = qd > 0.001 && qd < 0.999;
+  if (!dust.visible) return;
+  const T = qd * 1.5;
+  for (let i = 0; i < DUST; i++) {
+    const t = Math.max(0, T - dustDelay[i]), v = dustVel[i];
+    dustPos[i * 3] = impact.x + v.x * t; dustPos[i * 3 + 1] = impact.y + 0.05 + v.y * t - 0.5 * GRAVITY * t * t; dustPos[i * 3 + 2] = impact.z + v.z * t;
+  }
+  dustMat.opacity = 1 - ramp(qd, 0.45, 1);
+  dustGeo.attributes.position.needsUpdate = true;
 }
 
 function setSubs(lidAmt, discAmt) {
@@ -1001,6 +1267,22 @@ addEventListener('resize', () => {
 readScroll();
 stories.forEach(s => s.t = s.target);
 
+// Drop effects if this machine can't hold the frame rate.
+let perfFrames = 0, perfSum = 0;
+function adaptQuality(dt) {
+  if (tier === 0 || perfFrames > 600) return;
+  if (++perfFrames < 40) return;
+  perfSum += dt;
+  if (perfFrames % 90 === 0) {
+    const avg = perfSum / 90; perfSum = 0;
+    if (avg > 0.033) {
+      tier--;
+      if (tier < 2) { gtao.enabled = false; }
+      if (tier < 1) { key.castShadow = false; DPR = Math.min(DPR, 1.25); renderer.setPixelRatio(DPR); composer.setPixelRatio(DPR); }
+    }
+  }
+}
+
 const proj = new THREE.Vector3();
 let fanAngle = 0, last = performance.now(), fanSpeed = 0.6;
 
@@ -1030,43 +1312,67 @@ function frame(now) {
   }
 
   if (anyVisible) {
-    let labelSet = null, labelOp = 0, focus = null;
+    let labelSet = null, labelOp = 0, focusAmt = 0, camDist = 30, look = 1;
     if (active === web) {
       const t = web.t;
       webPivot.position.set(0, 0, 0); webPivot.rotation.set(0, 0, 0);
       phonePivot.visible = false; webPivot.visible = true;
-      const crack = ramp(t, 0.28, 0.62) * (1 - ramp(t, 7.3, 7.9));
-      const shatter = easeOut(ramp(t, 0.6, 1.75)) * (1 - ramp(t, 7.05, 7.85));
+      const crack = ramp(t, 0.26, 0.62) * (1 - ramp(t, 7.3, 7.9));
+      const shatter = ramp(t, 0.6, 1.75) * (1 - ramp(t, 7.05, 7.85));
       placeShards(crack, shatter);
+      placeDust(ramp(t, 0.58, 1.5) * (1 - ramp(t, 7.0, 7.1)));
+      xrayMat.color.setScalar(1.3 + 4.5 * Math.sin(Math.PI * clamp(crack)) * (1 - ramp(t, 0.7, 0.9)));
       const E = ramp(t, 1.15, 2.55) * (1 - ramp(t, 7.0, 7.75));
       let spread = null;
       if (t > 3.75 && t < 4.95) spread = ['components', ramp(t, 3.8, 4.15) * (1 - ramp(t, 4.6, 4.95))];
       else if (t >= 4.95 && t < 6.15) spread = ['core', ramp(t, 4.95, 5.3) * (1 - ramp(t, 5.85, 6.15))];
       else if (t >= 6.15 && t < 7.25) spread = ['fans', ramp(t, 6.15, 6.5) * (1 - ramp(t, 6.95, 7.25))];
-      explodeParts(webParts, E, 1, 1, spread, 7, 2.5);
+      focusAmt = spread ? spread[1] : 0;
+      explodeParts(webParts, E, dt, 1, spread, 7, 2.5);
+      placeScrews(E, 'web');
+      placeCables(E);
       setSubs(ease(ramp(t, 5.0, 5.6)) * (1 - ramp(t, 6.4, 6.9)), E);
       fanSpeed = lerp(0.6, 16, ramp(t, 6.2, 6.7) * (1 - ramp(t, 7.0, 7.5)));
       if (coreMat) coreMat.emissiveIntensity = 5 + 6 * ramp(t, 5.0, 5.6) * (1 - ramp(t, 6.3, 6.8)) + Math.sin(now / 420) * 0.8;
-      applyCamera(WEB_KEYS, t, mouse);
+      camDist = applyCamera(WEB_KEYS, t, mouse, now);
+      look = ramp(t, 0.3, 1.2);
+      scene.environmentIntensity = lerp(0.3, 0.85, look);
+      key.intensity = lerp(0.55, 1.3, look);
       labelSet = 'web';
       labelOp = ramp(t, 2.35, 2.75) * (1 - ramp(t, 3.4, 3.75));
     } else {
       const t = ph.t;
       webPivot.visible = t < 1.75; phonePivot.visible = true;
       webPivot.position.set(-13.5, 0, -5); webPivot.rotation.set(0, 0.42, 0);
-      placeShards(0, 0); explodeParts(webParts, 0); setSubs(0, 0);
+      placeShards(0, 0); placeDust(0); explodeParts(webParts, 0, dt); placeScrews(0, 'web'); placeCables(0); setSubs(0, 0);
       fanSpeed = 0.6;
       if (coreMat) coreMat.emissiveIntensity = 5 + Math.sin(now / 420) * 0.8;
       phonePivot.rotation.set(0, Math.PI * 2 * ease(ramp(t, 1.0, 2.3)), 0);
       const E = ramp(t, 2.3, 3.4) * (1 - ramp(t, 5.1, 5.85));
       const spread = (t > 3.95 && t < 5.15) ? ['jsi', ramp(t, 4.0, 4.3) * (1 - ramp(t, 4.85, 5.15))] : null;
-      explodeParts(phoneParts, E, 0.6, 1.4, spread, 4.5, 2.2);
-      applyCamera(PHONE_KEYS, t, mouse);
+      focusAmt = spread ? spread[1] : 0;
+      explodeParts(phoneParts, E, dt, 1.4, spread, 4.5, 2.2);
+      placeScrews(E, 'phone');
+      camDist = applyCamera(PHONE_KEYS, t, mouse, now);
+      scene.environmentIntensity = 0.85; key.intensity = 1.3;
       labelSet = 'phone';
       labelOp = ramp(t, 3.2, 3.55) * (1 - ramp(t, 3.85, 4.1));
     }
     fanAngle += fanSpeed * dt * (REDUCED ? 0.2 : 1);
     for (const r of rotors) r.rotation.y = fanAngle * r.userData.spin;
+    const blur = clamp((fanSpeed - 3) / 9) * 0.85;
+    for (const d of blurDiscs) d.material.opacity = blur;
+
+    // lens: depth of field on close-ups, film look once the page has turned into an object
+    bokeh.enabled = tier >= 2 && focusAmt > 0.05;
+    if (bokeh.enabled) {
+      bokeh.uniforms.focus.value = camDist;
+      bokeh.uniforms.aperture.value = 0.0009 * focusAmt;
+    }
+    film.uniforms.time.value = now / 1000;
+    film.uniforms.vignette.value = 0.5 * look;
+    film.uniforms.ca.value = 0.0022 * look;
+    film.uniforms.grain.value = 0.01 + 0.014 * look;
 
     // labels
     scene.updateMatrixWorld();
@@ -1074,7 +1380,6 @@ function frame(now) {
     for (const L of labels) {
       let op = L.product === labelSet ? labelOp : 0;
       if (PORTRAIT() && L.product === 'phone' && !['screen', 'jsi', 'turbo'].includes(L.p.id)) op = 0;
-      if (focus && L.p.id === focus[0] && L.product === labelSet) op = Math.max(op, focus[1]);
       if (active === web && L.p.id === 'display') op *= ramp(web.t, 2.3, 2.6);
       if (op < 0.01) { if (L.el.style.opacity !== '0') L.el.style.opacity = '0'; continue; }
       L.p.anchor.getWorldPosition(proj); proj.project(camera);
@@ -1086,16 +1391,17 @@ function frame(now) {
       if (L.product === 'web') { L.el.classList.toggle('up', PORTRAIT()); L.el.classList.toggle('left', !PORTRAIT() && L.p.side < 0); }
       if (vertical && L.product === 'web') { lx = x - w / 2; ly = y - h + 3.5; }
       else if (L.product === 'phone') { lx = x - w / 2; ly = L.p.side > 0 ? y - h + 3.5 : y - 3.5; }
-      else { lx = L.p.side < 0 ? x - w + 3.5 : x - 3.5; ly = y - h / 2; }
+      else { lx = L.p.side < 0 ? x - w + 3.5 : x - 3.5; ly = y - h / 2; lx = clamp(lx, 8, W - w - 8); }
       L.el.style.transform = `translate(${lx.toFixed(1)}px, ${ly.toFixed(1)}px)`;
     }
     composer.render();
+    adaptQuality(dt);
   }
   requestAnimationFrame(frame);
 }
 document.documentElement.classList.add('loaded');
 requestAnimationFrame(frame);
-window.__dbg = { stories, camera, webParts, phoneParts, shards, glassMat, frostMat, appMat, scene, THREE, webCv, xrCv, appCv };
+window.__dbg = { stories, camera, webParts, phoneParts, shards, scene, THREE, webCv, xrCv, appCv, gtao, bokeh };
 </script>
 </body>
 </html>

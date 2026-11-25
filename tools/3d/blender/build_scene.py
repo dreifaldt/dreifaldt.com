@@ -70,6 +70,11 @@ FROST    = mat('Frost',       (0.92, 0.94, 1.0), 0.0, 0.45, trans=0.6)
 WEBSITE  = mat('WebsiteSurface', (1, 1, 1), 0.0, 0.2)
 XRAY     = mat('XRaySurface',    (0.02, 0.05, 0.12), 0.0, 0.2, emit=(0.05, 0.3, 1.0), strength=1.0)
 APPSURF  = mat('AppSurface',     (1, 1, 1), 0.0, 0.2)
+STEEL    = mat('Steel',       (0.10, 0.10, 0.11), 1.0, 0.28)
+RECESS   = mat('Recess',      (0.0, 0.0, 0.0), 0.0, 0.9)
+COPPER   = mat('Copper',      (0.95, 0.56, 0.40), 1.0, 0.24)
+FERRITE  = mat('Ferrite',     (0.16, 0.16, 0.17), 0.3, 0.55)
+MLCC     = mat('MLCC',        (0.42, 0.31, 0.19), 0.0, 0.45)
 
 # ---------------------------------------------------------------- geometry helpers
 def dedupe(pts, eps=1e-5):
@@ -216,6 +221,49 @@ def text(name, body, size, loc, material, parent, extrude=0.004, align='CENTER')
     except Exception as e:
         print('text failed', name, e)
 
+def screw(name, parent, x, y, z, r=0.15, idx=0):
+    """Torx screw: head, hexalobular recess and a threaded shank. The Empty is what animates."""
+    e = empty(name, parent, loc=(x, y, z), props={'screw': float(idx)}, size=0.1)
+    obj(name + '_head', prism(circle_pts(r, 32), 0.0, 0.065), STEEL, e, bevel=0.022, seg=3, angle=40)
+    pts = []
+    for k in range(48):
+        a = 2 * math.pi * k / 48
+        rr = r * 0.40 * (1 + 0.24 * math.cos(6 * a))
+        pts.append((rr * math.cos(a), rr * math.sin(a)))
+    obj(name + '_recess', prism(pts, 0.066, 0.069), RECESS, e, smooth=False)
+    bm = bmesh.new(); cyl_into(bm, r * 0.40, -0.40, 0.0, seg=20)
+    for t in range(7):
+        ring_into(bm, r * 0.56, r * 0.40, -0.37 + t * 0.05, -0.35 + t * 0.05, seg=20)
+    obj(name + '_thread', bm, STEEL, e)
+    return e
+
+def pipe(name, pts, r, material, parent):
+    """Smooth tube along a bezier path (heat pipes)."""
+    cu = bpy.data.curves.new(name, 'CURVE'); cu.dimensions = '3D'
+    cu.bevel_depth = r; cu.bevel_resolution = 4; cu.use_fill_caps = True; cu.resolution_u = 10
+    sp = cu.splines.new('BEZIER'); sp.bezier_points.add(len(pts) - 1)
+    for i, q in enumerate(pts):
+        bp = sp.bezier_points[i]; bp.co = q; bp.handle_left_type = bp.handle_right_type = 'AUTO'
+    tmp = bpy.data.objects.new(name + '_tmp', cu); COL.objects.link(tmp)
+    dg = bpy.context.evaluated_depsgraph_get()
+    me = bpy.data.meshes.new_from_object(tmp.evaluated_get(dg))
+    bpy.data.objects.remove(tmp); bpy.data.curves.remove(cu)
+    me.materials.clear(); me.materials.append(material)
+    for f in me.polygons: f.use_smooth = True
+    ob = bpy.data.objects.new(name, me); COL.objects.link(ob); ob.parent = parent
+    return ob
+
+def box_uv(me, scale=0.5):
+    """Box-projected UVs so micro-texture (bead blast, brushed metal) can tile on any part."""
+    if me.uv_layers: return
+    uv = me.uv_layers.new(name='UVMap')
+    for poly in me.polygons:
+        n = poly.normal; ax = max(range(3), key=lambda i: abs(n[i]))
+        for li in poly.loop_indices:
+            co = me.vertices[me.loops[li].vertex_index].co
+            u, v = ((co.y, co.z), (co.x, co.z), (co.x, co.y))[ax]
+            uv.data[li].uv = (u * scale, v * scale)
+
 # ================================================================ WEBSITE DEVICE
 W, H, R = 16.0, 10.0, 0.9
 SW, SH, SR = L['screen']['w'], L['screen']['h'], L['screen']['r']
@@ -256,20 +304,34 @@ for sx, nm in ((-1, 'L'), (1, 'R')):
     obj('fan_housing_' + nm, bm, BLACK, p, bevel=0.015)
     rot = bmesh.new()
     cyl_into(rot, 0.74, -0.19, 0.17, seg=48)
-    nb = 13
-    for i in range(nb):
+    nb = 29
+    for i in range(nb):                     # swept, pitched airfoil blades, like a blower fan
         blade = bmesh.new()
-        box_into(blade, 0.68, -0.26, -0.018, 2.5, 0.26, 0.018)
-        bmesh.ops.rotate(blade, verts=blade.verts[:], cent=(0, 0, 0), matrix=Matrix.Rotation(math.radians(30), 3, 'X'))
-        bmesh.ops.rotate(blade, verts=blade.verts[:], cent=(0, 0, 0), matrix=Matrix.Rotation(2 * math.pi * i / nb, 3, 'Z'))
+        bmesh.ops.create_grid(blade, x_segments=10, y_segments=3, size=0.5)
+        r_ = bmesh.ops.extrude_face_region(blade, geom=blade.faces[:], use_keep_orig=True)
+        nv = [g for g in r_['geom'] if isinstance(g, bmesh.types.BMVert)]
+        bmesh.ops.translate(blade, verts=nv, vec=(0, 0, 0.028))
+        for v in blade.verts:
+            t = v.co.x + 0.5; chord = v.co.y * 0.36; zt = v.co.z
+            rr = 0.72 + t * (2.47 - 0.72)
+            pitch = math.radians(36 - 14 * t)
+            ang = 2 * math.pi * i / nb + chord * math.cos(pitch) / rr + 0.62 * t
+            v.co = (rr * math.cos(ang), rr * math.sin(ang), chord * math.sin(pitch) + zt - 0.014)
+        bmesh.ops.recalc_face_normals(blade, faces=blade.faces[:])
         me = bpy.data.meshes.new('b'); blade.to_mesh(me); blade.free(); rot.from_mesh(me); bpy.data.meshes.remove(me)
+    ring_into(rot, 2.53, 2.40, 0.11, 0.17, seg=128)
     obj('rotor_' + nm, rot, ANOD, p, loc=(sx * 4.2, 0, 0.41), props={'spin': 1.0 if sx < 0 else -1.0})
     bm = bmesh.new(); cyl_into(bm, 0.6, 0.17, 0.2, seg=48)
     obj('rotor_cap_' + nm, bm, ALU, bpy.data.objects['rotor_' + nm], loc=(0, 0, 0), bevel=0.01)
 
+for k, (sx, sy) in enumerate(((-1, -1), (1, -1), (1, 1), (-1, 1))):
+    screw(f'fan_screw_{k}', bpy.data.objects['part_fans'], sx * 7.05, sy * 4.1, 0.2, 0.14, k)
+
 # -- data
 p = part(web, 'data', 'Data', 4.0, 1, (6.6, -3.0, 1.0))
 obj('data_plate', prism(rr_pts(W - 1.4, H - 1.4, 0.55, 12), 0.64, 0.67), GRAPH, p, bevel=0.01)
+for k, (sx, sy) in enumerate(((-1, -1), (1, -1), (1, 1), (-1, 1))):
+    screw(f'data_screw_{k}', p, sx * 6.75, sy * 3.75, 0.67, 0.13, k)
 for n, x in enumerate((-5.0, 0.0, 5.0)):
     for i in range(3):
         z0 = 0.67 + i * 0.13
@@ -280,7 +342,7 @@ for n, x in enumerate((-5.0, 0.0, 5.0)):
             obj(f'db{n}_ring{i}', bm, CYANG, p, props={'sub': i + 0.5})
 for sx in (-1, 1):
     bm = prism(rr_pts(4.6, 1.3, 0.08, 4, cx=sx * 3.8, cy=2.75), 0.67, 0.71)
-    obj(f'ssd_{sx}', bm, PCB, p, bevel=0.008)
+    obj(f'ssd_{sx}', bm, PCB, p, bevel=0.008, uv=(sx * 3.8 - 2.3, sx * 3.8 + 2.3, 2.1, 3.4))
     bm = bmesh.new()
     for k in range(3): box_into(bm, sx * 3.8 - 1.9 + k * 1.25, 2.3, 0.71, sx * 3.8 - 0.95 + k * 1.25, 3.2, 0.77)
     obj(f'ssd_chips_{sx}', bm, BLACK, p, bevel=0.01)
@@ -290,7 +352,45 @@ for sx in (-1, 1):
 
 # -- core: the AI chip board
 p = part(web, 'core', 'AI core', 6.2, -1, (-6.8, -3.6, 1.1))
-obj('core_pcb', prism(rr_pts(15.0, 9.0, 0.6, 12), 1.02, 1.06), PCB, p, bevel=0.01)
+obj('core_pcb', prism(rr_pts(15.0, 9.0, 0.6, 12), 1.02, 1.06), PCB, p, bevel=0.01, uv=(-7.5, 7.5, -4.5, 4.5))
+for k, (sx, sy) in enumerate(((-1, -1), (1, -1), (1, 1), (-1, 1))):
+    screw(f'core_screw_{k}', p, sx * 6.95, sy * 3.95, 1.06, 0.15, k)
+# heat pipes from the chip to two fin stacks along the back edge
+for sx in (-1, 1):
+    pipe(f'heatpipe_a_{sx}', [(sx * 0.9, 2.15, 1.17), (sx * 0.95, 2.75, 1.15), (sx * 1.8, 3.3, 1.14), (sx * 3.1, 3.38, 1.14), (sx * 5.75, 3.38, 1.14)], 0.075, COPPER, p)
+    pipe(f'heatpipe_b_{sx}', [(sx * 1.45, 2.15, 1.17), (sx * 1.5, 2.55, 1.15), (sx * 2.3, 3.78, 1.14), (sx * 3.1, 3.82, 1.14), (sx * 5.75, 3.82, 1.14)], 0.075, COPPER, p)
+    bm = bmesh.new()
+    box_into(bm, min(sx * 2.65, sx * 5.75), 2.92, 1.06, max(sx * 2.65, sx * 5.75), 4.2, 1.09)
+    for f in range(23):
+        x = sx * (2.72 + f * 0.135)
+        box_into(bm, x - 0.013, 2.95, 1.09, x + 0.013, 4.17, 1.5)
+    obj(f'fins_{sx}', bm, ALU, p, smooth=False)
+bm = bmesh.new()
+for k in range(5):
+    prism_into(bm, rr_pts(0.52, 0.52, 0.06, 4, cx=-1.8 + k * 0.9, cy=-2.58), 1.06, 1.33)
+obj('core_inductors', bm, FERRITE, p, bevel=0.025)
+bodies, caps_, ends = bmesh.new(), bmesh.new(), bmesh.new()
+placed = 0; tries = 0
+while placed < 110 and tries < 5000:
+    tries += 1
+    x = rng.uniform(-7.0, 7.0); y = rng.uniform(-4.1, 4.1)
+    if abs(x) < 2.55 and -2.95 < y < 2.6: continue          # chip + inductors
+    if 2.8 < abs(x) < 3.9 and -1.9 < y < 2.3: continue      # memory
+    if 2.5 < abs(x) < 5.9 and y > 2.75: continue            # fin stacks
+    if abs(x) > 6.0 and abs(y) < 3.0: continue              # connectors
+    if abs(x) > 6.6 and abs(y) > 3.6: continue              # screws
+    horiz = rng.random() < 0.5
+    lx, ly = (0.16, 0.08) if horiz else (0.08, 0.16)
+    target = bodies if placed % 2 else caps_
+    box_into(target, x - lx / 2 + 0.03 * horiz, y - ly / 2 + 0.03 * (not horiz), 1.06, x + lx / 2 - 0.03 * horiz, y + ly / 2 - 0.03 * (not horiz), 1.105)
+    for e_ in (-1, 1):
+        ex, ey = (x + e_ * (lx / 2 - 0.015), y) if horiz else (x, y + e_ * (ly / 2 - 0.015))
+        box_into(ends, ex - (0.015 if horiz else ly / 4), ey - (ly / 4 if horiz else 0.015), 1.06, ex + (0.015 if horiz else ly / 4), ey + (ly / 4 if horiz else 0.015), 1.107)
+    placed += 1
+obj('core_resistors', bodies, BLACK, p, smooth=False)
+obj('core_mlcc', caps_, MLCC, p, smooth=False)
+obj('core_smd_ends', ends, ALU, p, smooth=False)
+obj('core_crystal', prism(rr_pts(0.62, 0.3, 0.12, 6, cx=4.7, cy=-3.45), 1.06, 1.16), ALU, p, bevel=0.02)
 obj('core_substrate', prism(rr_pts(4.6, 4.6, 0.12, 6, cy=0.2), 1.06, 1.1), SUBST, p, bevel=0.01)
 bm = bmesh.new()
 for cx_ in range(3):
@@ -329,11 +429,20 @@ while placed < 34:
     x = rng.uniform(-6.9, 6.9); y = rng.uniform(-4.0, 4.0)
     if abs(x) < 4.0 and abs(y - 0.2) < 2.9: continue
     if abs(x) > 6.0 and abs(y) < 2.9: continue
+    if 2.5 < abs(x) < 5.9 and y > 2.7: continue
+    if abs(x) > 6.6 and abs(y) > 3.6: continue
     cyl_into(bm, 0.075, 1.06, 1.17, cx=x, cy=y, seg=12); placed += 1
 obj('core_caps', bm, ALU, p)
 bm = bmesh.new()
 for sy in (-1, 1): box_into(bm, 6.15, sy * 1.8 - 1.0, 1.06, 6.95, sy * 1.8 + 1.0, 1.32)
 obj('core_connectors', bm, ALU, p, bevel=0.03)
+bm = bmesh.new()
+for sy in (-1, 1):
+    for row in (-0.18, 0.18):
+        for k in range(18):
+            y = sy * 1.8 - 0.9 + k * 0.105
+            box_into(bm, 6.55 + row - 0.03, y - 0.025, 1.32, 6.55 + row + 0.03, y + 0.025, 1.345)
+obj('core_pins', bm, GOLD, p, smooth=False)
 
 # -- api: acrylic routing plane with glowing endpoints
 p = part(web, 'api', 'API & integrations', 8.2, 1, (6.8, -3.4, 1.3))
@@ -491,7 +600,9 @@ box_into(bm, PW / 2 - 0.02, 1.4, 0.3, PW / 2 + 0.05, 2.6, 0.55)
 obj('buttons', bm, TITAN, p, bevel=0.02)
 
 p = part(phone, 'native', 'Native modules', 1.2, -1, (2.0, 3.9, 0.3))
-obj('native_board', prism(rr_pts(4.0, 3.9, 0.3, 6, cy=2.55), 0.1, 0.14), PCB, p, bevel=0.008)
+obj('native_board', prism(rr_pts(4.0, 3.9, 0.3, 6, cy=2.55), 0.1, 0.14), PCB, p, bevel=0.008, uv=(-2.0, 2.0, 0.6, 4.5))
+for k, (x, y) in enumerate(((-1.75, 0.85), (-1.75, 4.25), (1.75, 4.25))):
+    screw(f'native_screw_{k}', p, x, y, 0.14, 0.09, k)
 obj('native_soc', prism(rr_pts(1.5, 1.5, 0.08, 4, cx=0.4, cy=2.6), 0.14, 0.17), SUBST, p, bevel=0.006)
 lid2 = obj('native_lid', prism(rr_pts(1.3, 1.3, 0.14, 6, cx=0.4, cy=2.6), 0.17, 0.25), ALU, p, bevel=0.02)
 text('native_lid_text', 'E1 Native', 0.2, (0.4, 2.6, 0.25), ENGRAVE, lid2)
@@ -571,6 +682,8 @@ for nm, loc, energy, size in (('Key', (10, -12, 18), 2500, 8), ('Rim', (-14, 10,
     lo.rotation_euler = (Vector((0, 0, 1)).rotation_difference(Vector(loc).normalized())).to_euler()
 
 # ================================================================ export
+for o in SC.objects:
+    if o.type == 'MESH': box_uv(o.data)
 for o in list(SC.objects):
     o.select_set(o.type in ('MESH', 'EMPTY'))
 bpy.ops.export_scene.gltf(
